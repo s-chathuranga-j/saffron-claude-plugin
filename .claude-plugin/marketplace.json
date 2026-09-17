@@ -1,0 +1,25 @@
+{
+  "name": "saffron",
+  "description": "Saffron, the Gherkin-native end-to-end test runner: language server, MCP server and agent skill for Claude Code.",
+  "owner": {
+    "name": "Chathuranga Jayasinghe",
+    "email": "genius.chathuranga@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "saffron",
+      "source": "./plugins/saffron",
+      "description": "Language server, MCP tools and agent skill for Saffron .saffron / .feature tests.",
+      "version": "0.5.7",
+      "category": "testing",
+      "keywords": [
+        "saffron",
+        "gherkin",
+        "e2e",
+        "playwright",
+        "lsp",
+        "testing"
+      ]
+    }
+  ]
+}

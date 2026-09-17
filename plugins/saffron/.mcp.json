@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "saffron": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "-p",
+        "saffron-ai@0.5.7",
+        "saffron",
+        "mcp"
+      ]
+    }
+  }
+}

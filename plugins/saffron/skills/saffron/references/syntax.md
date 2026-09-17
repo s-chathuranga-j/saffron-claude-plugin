@@ -1,0 +1,167 @@
+# Saffron syntax cheat sheet
+
+Everything valid Gherkin is valid Saffron. `.saffron` files add `StepSet:`.
+
+## Steps
+
+```gherkin
+Given I am on the login page                     # action (healable)
+When I enter "standard_user" in the username field
+And I click the "Log in" button
+Then I should see the products page              # assertion (never healed)
+But I should not see an error banner
+```
+
+`And`/`But` inherit action-vs-assertion from the preceding step. The
+trailing block of assertions is always strict; under the opt-in
+`adaptable-mid` policy only mid-scenario checkpoints may be adapted.
+
+## Scenario Outlines
+
+One cache serves every row: `<param>` placeholders stay in the cache and
+resolve per row at replay.
+
+```gherkin
+Scenario Outline: Failed login shows an error
+  When I enter "<username>" in the username field
+  And I enter "<password>" in the password field
+  And I click the "Log in" button
+  Then I should see the error message "<message>"
+
+  Examples:
+    | username | password | message                    |
+    | locked   | secret   | This user has been locked. |
+    | standard | wrong    | Wrong username or password |
+```
+
+## Data tables
+
+**2-column = key/value.** Values record as `<table:key>` references:
+edit the values and replay stays free; change a key and the step
+honestly re-records.
+
+```gherkin
+When I enter the following credentials
+  | username | premium_user |
+  | password | secret2      |
+```
+
+**Wider = records** (header row + one row per record). Cells record as
+`<table:1:firstName>`, `<table:2:email>` (1-based rows). Editing any cell
+replays free; adding/removing rows or renaming headers re-records.
+
+```gherkin
+When I add the following guests
+  | firstName | email          | city   |
+  | Alice     | alice@test.com | Oslo   |
+  | Bob       | bob@test.com   | Bergen |
+```
+
+## Doc strings
+
+Content records as `<docstring>`; rewording replays free. A later
+assertion on that content follows the edit too ("the saved note should
+be shown").
+
+```gherkin
+When I leave a note
+  """
+  Please deliver after 5pm.
+  """
+Then the saved note should be shown
+```
+
+## Secrets: `{env:VAR}`
+
+```gherkin
+When I enter "{env:ADMIN_USER}" in the username field
+And I enter "{env:ADMIN_PASSWORD}" in the password field
+```
+
+Resolved from the environment (or a git-ignored `.env`; real env wins) at
+replay. Caches, proposals, reports and history contain only the token;
+a missing variable fails fast by name. Honest note: during the *first*
+recording the agent types the real value once: use rotatable staging
+credentials.
+
+## Dates and dynamic values
+
+- Say the intent: "select a check-in date 1 day from today" → recorded
+  as `{date+1}`; stays valid every day. Formats: `{date}`, `{date-3}`,
+  `{date+1:DD.MM.YYYY}`.
+- Capture and compare displayed values instead of literals:
+
+```gherkin
+When I record the displayed total as "before"
+And I add another night
+Then "before" should differ from the displayed total
+And the total should match "NOK [\d,]+"
+And the "Book" link should point to "/booking"
+```
+
+## Network-aware steps (no keywords, plain prose)
+
+```gherkin
+When I place the order and wait for the order API to return 201
+And I wait until the job status API reports "READY"
+Then the order request should have returned 201        # assertion, never healed
+```
+
+Recorded as URL-pattern + method + status (+ body pattern) matchers;
+waits are satisfied by responses from the triggering step onward, so
+"click and wait" never races. Prefer these over any fixed sleep.
+
+## Page furniture
+
+```gherkin
+When I click "Clear workspace" and confirm the dialog       # alert/confirm/prompt
+When I upload the file "examples/sample.txt" as the attachment
+When I drag the task card onto the done column
+When I enter "Great tool" in the feedback comment and send it   # inside an iframe: just interact
+Then the feedback widget should show "Thanks for: Great tool"
+```
+
+Upload paths resolve from the working directory. Links that open new
+tabs are followed automatically.
+
+## StepSets (`.saffron` only)
+
+```gherkin
+Feature: Checkout
+
+StepSet: Complete guest information
+    Given I am on the guest information page
+    When I enter guest name "Chathuranga"
+    And I click the continue button
+    Then I am not on the guest information page
+
+Scenario: Checkout happy path
+    Given I am on the cart page
+    StepSet Complete guest information
+    Then I am on the checkout page
+```
+
+| Form | Syntax | Notes |
+|---|---|---|
+| Define | `StepSet: <name>` | Colon, like `Scenario:`; steps indented below |
+| Invoke | `StepSet <name>` | No colon; sits anywhere among steps |
+
+- Expanded at parse time: inlined steps cache and seed like ordinary
+  steps; editing a set makes every caller honestly stale (re-recorded
+  mostly seeded); heal edits route to the set definition.
+- Names project-wide unique (also catches the colon typo at an
+  invocation). Sets may contain tables, doc strings and `<param>`
+  placeholders; no nesting; a set never runs standalone.
+- Shared flows go in `features/shared.steps.saffron`, a sets-only
+  library file with a `Feature:` header and no scenarios.
+- Assertions inside a set are checkpoints mid-scenario and part of the
+  strict final block when the set is invoked last.
+
+## Tags
+
+```gherkin
+@smoke @checkout
+Scenario: ...
+```
+
+`saffron run --filter @smoke`.
