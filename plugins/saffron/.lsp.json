@@ -4,7 +4,7 @@
     "args": [
       "-y",
       "-p",
-      "saffron-ai@0.5.7",
+      "saffron-ai@0.6.0",
       "saffron",
       "lsp"
     ],

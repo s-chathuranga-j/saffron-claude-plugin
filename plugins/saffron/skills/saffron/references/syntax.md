@@ -124,6 +124,20 @@ Then the feedback widget should show "Thanks for: Great tool"
 Upload paths resolve from the working directory. Links that open new
 tabs are followed automatically.
 
+## Tabs (plain prose, no keyword)
+
+```gherkin
+When I click the "Open preview" link                 # opens a new tab: replay follows it
+Then the preview should show "Draft 3"               # asserted on the new tab
+When I switch back to the first tab
+And I close the preview tab
+When I open a new tab at the admin page
+```
+
+Recorded as `switchTab` / `closeTab` / `newTab` with 0-based tab indexes
+in creation order; replay repeats them in order. Say which tab in the
+step ("the first tab", "the preview tab") so the recording is unambiguous.
+
 ## StepSets (`.saffron` only)
 
 ```gherkin
