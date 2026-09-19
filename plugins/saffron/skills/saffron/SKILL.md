@@ -57,7 +57,9 @@ wordings to converge before adding more.
 
 Saffron never heals an assertion: the agent may help *reach* a `Then`,
 never make it pass. So `Then` lines must state exactly what must be true,
-with stable text, never volatile values (prices, dates, counters). Put
+with stable text, never volatile values (prices, dates, counters). A `Then`
+that records no check at all fails on replay, so every assertion step must
+end up with something recorded against it. Put
 the final assertions **last**; the trailing block of `Then` steps is
 strict under every policy. Use `Given`/`When` for actions.
 
@@ -129,6 +131,7 @@ npx saffron run                          # record misses, replay hits, heal fail
 npx saffron run --filter @smoke          # by tag (comma-separate several; any of them)
 npx saffron run --no-agent               # replay only (CI without AI access)
 npx saffron status                       # what is cached, pending, tagged; vocabulary health
+npx saffron diff                         # what a proposal changes, action by action: the evidence
 npx saffron accept                       # list pending proposals with narratives
 npx saffron accept --all                 # promote verified proposals to caches
 npx saffron accept <file> [<file>...]    # promote chosen ones
