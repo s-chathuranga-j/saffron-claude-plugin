@@ -4,7 +4,7 @@ description: Write, run, and maintain end-to-end UI tests with Saffron, a Gherki
 license: Saffron Free Use License v1.0 (see the saffron-ai package LICENSE)
 metadata:
   author: saffron-ai
-  homepage: https://saffron-ai.lovable.app
+  homepage: https://saffron-ai.io
 ---
 
 # Saffron
@@ -12,8 +12,10 @@ metadata:
 Saffron runs plain-Gherkin scenarios in a real browser. There are **no
 step definitions and no glue code**: on the first run an AI agent performs
 each step and records what it did into a JSON cache; every later run
-replays that cache with plain Playwright: zero AI calls, zero tokens,
-~100 ms per scenario. When the UI drifts, the agent heals the failing
+is replayed by Saffron in a real browser: zero AI calls, zero tokens, at
+the speed of the browser and the app. (The cache is Saffron's own JSON, run
+on Playwright's browser engine; Playwright MCP is used only by the agent
+while recording and healing.) When the UI drifts, the agent heals the failing
 step mid-run and files a reviewable proposal.
 
 Your job when writing tests is to make that economy work. Three rules
