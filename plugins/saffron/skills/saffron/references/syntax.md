@@ -84,6 +84,60 @@ a missing variable fails fast by name. Honest note: during the *first*
 recording the agent types the real value once: use rotatable staging
 credentials.
 
+## Test data: `{data:...}`
+
+Values that several scenarios share (accounts, names, enum values) live in
+JSON files under `data/`, not in the feature file. Committed, so never
+secrets.
+
+```json
+// data/users.json
+{ "admin": { "email": "admin@test.com" }, "roles": ["Admin", "Editor", "Viewer"] }
+```
+
+```gherkin
+When I sign in as {data:users.admin.email}
+Then the role filter should list every {data:users.roles}
+```
+
+- A reference is the file name without `.json`, then a dotted path; a number
+  picks a list entry (`{data:users.roles.0}`).
+- The recording stores the token and replay reads the file: editing a value
+  changes the next replay at zero tokens. A recording that still spells out
+  the OLD value goes stale and records again.
+- `every {data:list}` in a `Then` step records ONE assertion that names the
+  list; replay checks each value, so adding one to the file needs no
+  re-record. Every listed value must be present; extras like "All" are fine.
+- A missing file or key stops the run before a browser opens, by name.
+- Per environment: `data/users.staging.json` is laid over `data/users.json`
+  with `--env staging` (or `SAFFRON_ENV`, or `"env"` in the config).
+
+### Examples from a file (`.saffron` only)
+
+```gherkin
+Scenario Outline: Role sees its menu
+  Given I sign in as <role>
+  Then I should see the <menu> menu
+
+  Examples: {data:roles}
+```
+
+Reads `data/roles.csv` (header row = placeholder names) or a JSON list of
+records. One recording, one zero-token replay per row; adding a row records
+nothing. A placeholder with no column is a parse error naming both.
+
+### Unique per run: `{unique:name}`
+
+```gherkin
+When I register as user-{unique:id}@test.com
+Then the welcome banner should greet user-{unique:id}@test.com
+```
+
+New on every run, the same within one run, so a later step can find what an
+earlier step created and reruns do not collide with leftovers.
+`{unique:name}` is 10 lowercase letters and digits; `{unique:name:digits}`
+is 9 digits.
+
 ## Dates and dynamic values
 
 - Say the intent: "select a check-in date 1 day from today" → recorded

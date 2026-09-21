@@ -20,6 +20,7 @@ your-project/
 {
   "baseURL": "https://stage.your-app.com",
   "features": "features",
+  "dataDir": "data",
   "actionTimeoutMs": 5000,
   "pollIntervalMs": 100,
   "retries": 1,
@@ -40,6 +41,7 @@ your-project/
 
 | Key | Meaning |
 |---|---|
+| `dataDir` | Folder of JSON files read by `{data:file.key}` tokens (default `data`). Committed; not for secrets |
 | `baseURL` | App under test; steps say "the login page", not full URLs |
 | `storageState` | Playwright storage-state JSON so replays and the agent start authenticated (`npx playwright open --save-storage=.auth/state.json <url>`) |
 | `actionTimeoutMs` | Budget for one action: Playwright's actionability wait and the deadline for a polled assertion (default 5000) |

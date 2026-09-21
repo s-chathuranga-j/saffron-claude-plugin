@@ -68,6 +68,7 @@ strict under every policy. Use `Given`/`When` for actions.
 ## 3. Never bake volatile or secret values into files
 
 - Secrets: `{env:VAR}`, as in `When I enter "{env:ADMIN_PASSWORD}" in the password field`.
+- Shared test data (accounts, names, enum values): put it in `data/*.json` and write `{data:users.admin.email}` (file, then dotted path; one value, not a list). The recording stores the token, so editing the file changes the next replay at zero tokens. Never for secrets: data files are committed. To check a whole list (an enum), point a Then step at it: `Then the status filter should list every {data:enums.OrderStatus}`; replay iterates the file's list, so adding a value needs no re-record. `Examples: {data:roles}` reads outline rows from `data/roles.csv` or a JSON list (`.saffron` only). A value that must be new on every run (an email for a sign-up) is `{unique:name}`: fresh per run, the same within it.
 - Dates: write intent, not literals: "1 day from today" records as `{date+1}`.
 - Dynamic display values: capture and compare, e.g. `I record the total as "first"` … `"first" should differ from the displayed total`.
 
