@@ -10,7 +10,7 @@
       "name": "saffron",
       "source": "./plugins/saffron",
       "description": "Language server, MCP tools and agent skill for Saffron .saffron / .feature tests.",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "category": "testing",
       "keywords": [
         "saffron",

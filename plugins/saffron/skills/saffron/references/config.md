@@ -11,6 +11,7 @@ your-project/
     proposals/            pending AI proposals         → review, then gone
     history.jsonl         one line per run (trends)    → commit recommended
     reports/              latest.html / latest.json    → git-ignore
+    artifacts/            failure screenshots (latest run)  → git-ignore
 ```
 
 ## `saffron.config.json`
@@ -22,6 +23,7 @@ your-project/
   "actionTimeoutMs": 5000,
   "pollIntervalMs": 100,
   "retries": 1,
+  "screenshot": "viewport",
   "model": "claude-sonnet-5",
   "healModel": "claude-haiku-4-5",
   "maxTurns": 100,
@@ -42,6 +44,7 @@ your-project/
 | `storageState` | Playwright storage-state JSON so replays and the agent start authenticated (`npx playwright open --save-storage=.auth/state.json <url>`) |
 | `actionTimeoutMs` | Budget for one action: Playwright's actionability wait and the deadline for a polled assertion (default 5000) |
 | `pollIntervalMs` | How often a polled assertion re-checks the page inside that budget (default 100, minimum 10) |
+| `screenshot` | Screenshot of the failing tab when a step fails: `viewport` (default), `full-page`, `off`. Shown in the report; paths in `latest.json` under `evidence`; files in `.saffron/artifacts/` (git-ignore it) |
 | `retries` | Extra attempts per action with backoff before a step fails and the agent heals (default 1). Not a scenario re-run; reports show a `retried ×N` chip |
 | `strict` | Yellow (passed-with-adaptation) exits 1 until reviewed: cached-green-only CI |
 | `assertionPolicy` | `strict` (default) or `adaptable-mid`; the final assertion block is always strict |
