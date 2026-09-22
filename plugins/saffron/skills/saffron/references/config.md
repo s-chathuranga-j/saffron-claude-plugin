@@ -53,7 +53,8 @@ your-project/
 | `verifyProposals` | Proof-replay every recording zero-AI before filing (default true) |
 | `reuseSteps` | Seed new recordings from existing step recordings (default true) |
 | `snapshotMode` | `none` (default, ~60% fewer AI calls) or `full` for highly dynamic pages |
-| `browser` | `chromium` / `firefox` / `webkit`: replay runs anywhere; recording and healing use Chromium |
+| `setup` / `teardown` | shell command or list, run once before / after the run in the project root (seed and clean test data). Failed setup: exit 2, nothing runs. Teardown always runs. They receive `SAFFRON_BASE_URL` and `SAFFRON_ENV`. `--no-hooks` skips them; `hookTimeoutMs` (default 300000) bounds each |
+| `browser` | `chromium` / `chrome` / `msedge` / `firefox` / `webkit`: replay runs anywhere; recording and healing need one of the first three. `chrome` and `msedge` must be installed on the machine |
 | `workers` | Parallel replay workers; agent work stays sequential |
 | `healModel` | Cheaper model for heal sessions only |
 

@@ -1,7 +1,7 @@
 # Saffron for Claude Code
 
 One plugin gives Claude Code everything it needs to write and maintain
-[Saffron](https://saffron-ai.lovable.app) tests well:
+[Saffron](https://saffron-ai.io) tests well:
 
 - **Language server** for `.saffron` and `.feature` files: Claude sees
   diagnostics after each edit (unknown or duplicate StepSet names, a set

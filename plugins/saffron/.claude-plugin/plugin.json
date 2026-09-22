@@ -1,6 +1,6 @@
 {
   "name": "saffron",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Saffron for Claude Code: language server for .saffron and .feature files (completion with recorded/divergent/unrecorded badges, StepSet and {env:VAR} navigation, hover, diagnostics), the saffron MCP server (search_steps, list_step_sets, project_status) and the Saffron agent skill.",
   "author": {
     "name": "Chathuranga Jayasinghe",
