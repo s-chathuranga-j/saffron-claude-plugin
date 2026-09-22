@@ -56,13 +56,14 @@ your-project/
 | `setup` / `teardown` | shell command or list, run once before / after the run in the project root (seed and clean test data). Failed setup: exit 2, nothing runs. Teardown always runs. They receive `SAFFRON_BASE_URL` and `SAFFRON_ENV`. `--no-hooks` skips them; `hookTimeoutMs` (default 300000) bounds each |
 | `browser` | `chromium` / `chrome` / `msedge` / `firefox` / `webkit`: replay runs anywhere; recording and healing need one of the first three. `chrome` and `msedge` must be installed on the machine |
 | `workers` | Parallel replay workers; agent work stays sequential |
+| `shardBy` | How `--shard` splits the suite: `"scenario"` (default) or `"file"` (each feature file on one machine) |
 | `healModel` | Cheaper model for heal sessions only |
 
 ## CLI
 
 | Command | Purpose |
 |---|---|
-| `saffron run [paths] [--filter @tag] [--no-agent] [--strict] [--browser b] [--workers n] [--heal-model m] [--headed]` | Run; cached replay, agent on misses/failures |
+| `saffron run [paths] [--filter @tag] [--no-agent] [--strict] [--browser b] [--workers n] [--shard i/n] [--shard-by scenario\|file] [--heal-model m] [--headed]` | Run; cached replay, agent on misses/failures. `--shard 2/4` runs one part of the suite on one CI machine and writes `shard-2-of-4.json` instead of `latest.json` |
 | `saffron accept [files... \| --all] [--include-unverified] [--with-feature-edit] [--propagate]` | Promote proposals (`--all` skips UNVERIFIED ones unless `--include-unverified`); `--with-feature-edit` rewrites adapted steps in the feature file; `--propagate` applies a heal's locator fix to every cache using that locator |
 | `saffron reject [files... \| --all]` | Discard proposals |
 | `saffron prune [--yes] [--check] [--json]` | List recordings no scenario owns any more; `--yes` deletes them, `--check` exits 1 for CI |
@@ -71,7 +72,7 @@ your-project/
 | `saffron author <prose-file>` | Draft a `.saffron` file from plain-paragraph requirements using the project vocabulary |
 | `saffron mcp` / `saffron lsp` | MCP tools (`search_steps`, `list_step_sets`, `project_status`) for AI assistants / language server for editors |
 | `saffron init [--examples] [--agents list]` | Install this skill into the project's agent directories, register MCP, add an AGENTS.md block, scaffold config; `--examples` adds the Saucedemo example suite |
-| `saffron report` | Open the latest HTML report |
+| `saffron report [--merge [paths]]` | Open the latest HTML report; `--merge` combines a complete set of shard reports into `latest.json`, `latest.html` and one history line |
 
 Exit codes: 0 green/yellow, 1 red (or yellow with `--strict`), 2 usage /
 preflight (e.g. a missing `{env:VAR}`).
