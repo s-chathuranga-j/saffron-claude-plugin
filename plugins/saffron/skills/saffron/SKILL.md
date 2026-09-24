@@ -147,7 +147,10 @@ npx saffron run --rerecord --filter @t   # a recording is wrong: record it fresh
 Results: **green** = cached pass · **yellow** = pending review (an AI
 recording or adaptation filed a proposal) · **red** = failed. Proposals
 arrive stamped `verified ✓` (zero-AI proof replay passed) or
-`UNVERIFIED ✗`; accept the former, investigate the latter. Commit
+`UNVERIFIED ✗`; accept the former, investigate the latter. A proposal is
+bound to the scenario and the committed recording as they were when it was
+filed: `saffron accept` refuses a STALE one (the step or the recording
+moved since) with no override; run the scenario again for a fresh one. Commit
 `.saffron/cache/` like snapshots; git-ignore `.saffron/reports/`.
 
 Cost in the summary line and report: on an API key the dollars are what
