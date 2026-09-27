@@ -11,7 +11,7 @@ your-project/
     proposals/            pending AI proposals         → review, then gone
     history.jsonl         one line per run (trends)    → commit recommended
     reports/              latest.html / latest.json    → git-ignore
-    artifacts/            failure screenshots (latest run)  → git-ignore
+    artifacts/            screenshots and traces (latest run)  → git-ignore
 ```
 
 ## `saffron.config.json`
@@ -25,6 +25,7 @@ your-project/
   "pollIntervalMs": 100,
   "retries": 1,
   "screenshot": "viewport",
+  "trace": "retain-on-failure",
   "model": "claude-sonnet-5",
   "healModel": "claude-haiku-4-5",
   "maxTurns": 100,
@@ -54,6 +55,7 @@ your-project/
 | `reuseSteps` | Seed new recordings from existing step recordings (default true) |
 | `snapshotMode` | `none` (default, ~60% fewer AI calls) or `full` for highly dynamic pages |
 | `setup` / `teardown` | shell command or list, run once before / after the run in the project root (seed and clean test data). Failed setup: exit 2, nothing runs. Teardown always runs. They receive `SAFFRON_BASE_URL` and `SAFFRON_ENV`. `--no-hooks` skips them; `hookTimeoutMs` (default 300000) bounds each |
+| `trace` | `off` (default), `on` or `retain-on-failure`: keep an execution trace per scenario; `saffron trace` opens it as a replay with the page inspectable at every step |
 | `browser` | `chromium` / `chrome` / `msedge` / `firefox` / `webkit`: replay runs anywhere; recording and healing need one of the first three. `chrome` and `msedge` must be installed on the machine |
 | `workers` | Parallel replay workers; agent work stays sequential |
 | `shardBy` | How `--shard` splits the suite: `"scenario"` (default) or `"file"` (each feature file on one machine) |
@@ -63,7 +65,8 @@ your-project/
 
 | Command | Purpose |
 |---|---|
-| `saffron run [paths] [--filter @tag] [--no-agent] [--strict] [--browser b] [--workers n] [--shard i/n] [--shard-by scenario\|file] [--heal-model m] [--headed]` | Run; cached replay, agent on misses/failures. `--shard 2/4` runs one part of the suite on one CI machine and writes `shard-2-of-4.json` instead of `latest.json` |
+| `saffron run [paths] [--filter @tag] [--no-agent] [--strict] [--browser b] [--workers n] [--shard i/n] [--shard-by scenario\|file] [--heal-model m] [--headed] [--trace mode]` | Run; cached replay, agent on misses/failures. `--shard 2/4` runs one part of the suite on one CI machine and writes `shard-2-of-4.json` instead of `latest.json`; `--trace retain-on-failure` keeps an execution trace of each scenario that is not green |
+| `saffron trace [scenario] [--port n] [--no-open] [--json]` | Open the execution replay of a scenario from the last run (scenario name, feature path or `feature:scenario`; default: every traced scenario in one replay, opening on a red one, else a yellow one); `--json` prints the parsed trace |
 | `saffron accept [files... \| --all] [--include-unverified] [--with-feature-edit] [--propagate]` | Promote proposals (`--all` skips UNVERIFIED ones unless `--include-unverified`); `--with-feature-edit` rewrites adapted steps in the feature file; `--propagate` applies a heal's locator fix to every cache using that locator |
 | `saffron reject [files... \| --all]` | Discard proposals |
 | `saffron prune [--yes] [--check] [--json]` | List recordings no scenario owns any more; `--yes` deletes them, `--check` exits 1 for CI |

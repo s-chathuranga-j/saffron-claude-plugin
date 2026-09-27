@@ -1,6 +1,6 @@
 ---
 name: saffron
-description: Write, run, and maintain end-to-end UI tests with Saffron, a Gherkin-native runner where an AI agent records each scenario once and every later run replays at zero tokens. Use when creating or editing .feature / .saffron files, defining StepSets, reviewing .saffron/cache proposals, running `saffron run`, or when the user mentions Saffron, Gherkin scenarios, step sets, cached replay, or `saffron.config.json`.
+description: Write, run, and maintain end-to-end UI tests with Saffron, where tests are written in plain language, an AI agent records each scenario once, and every later run replays at zero tokens. Use when creating or editing .feature / .saffron files, defining StepSets, reviewing .saffron/cache proposals, running `saffron run`, or when the user mentions Saffron, Gherkin scenarios, step sets, cached replay, or `saffron.config.json`.
 license: Saffron Free Use License v1.0 (see the saffron-ai package LICENSE)
 metadata:
   author: saffron-ai
