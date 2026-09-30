@@ -26,6 +26,7 @@ your-project/
   "retries": 1,
   "screenshot": "viewport",
   "trace": "retain-on-failure",
+  "provider": "claude",
   "model": "claude-sonnet-5",
   "healModel": "claude-haiku-4-5",
   "maxTurns": 100,
@@ -59,20 +60,23 @@ your-project/
 | `browser` | `chromium` / `chrome` / `msedge` / `firefox` / `webkit`: replay runs anywhere; recording and healing need one of the first three. `chrome` and `msedge` must be installed on the machine |
 | `workers` | Parallel replay workers; agent work stays sequential |
 | `shardBy` | How `--shard` splits the suite: `"scenario"` (default) or `"file"` (each feature file on one machine) |
+| `provider` | Whose agent records and heals, on its login on this machine: `claude` (default), `codex` (ChatGPT plan), `antigravity` (Google AI Pro/Ultra via the `agy` CLI, experimental), `cursor`. Also `--provider` |
+| `model` | Model in the provider's own names (unset: the provider's default). A `--provider` run on another provider ignores it |
 | `healModel` | Cheaper model for heal sessions only |
 
 ## CLI
 
 | Command | Purpose |
 |---|---|
-| `saffron run [paths] [--filter @tag] [--no-agent] [--strict] [--browser b] [--workers n] [--shard i/n] [--shard-by scenario\|file] [--heal-model m] [--headed] [--trace mode]` | Run; cached replay, agent on misses/failures. `--shard 2/4` runs one part of the suite on one CI machine and writes `shard-2-of-4.json` instead of `latest.json`; `--trace retain-on-failure` keeps an execution trace of each scenario that is not green |
+| `saffron run [paths] [--filter @tag] [--no-agent] [--strict] [--browser b] [--workers n] [--shard i/n] [--shard-by scenario\|file] [--provider p] [--heal-model m] [--headed] [--trace mode]` | Run; cached replay, agent on misses/failures. `--shard 2/4` runs one part of the suite on one CI machine and writes `shard-2-of-4.json` instead of `latest.json`; `--trace retain-on-failure` keeps an execution trace of each scenario that is not green |
 | `saffron trace [scenario] [--port n] [--no-open] [--json]` | Open the execution replay of a scenario from the last run (scenario name, feature path or `feature:scenario`; default: every traced scenario in one replay, opening on a red one, else a yellow one); `--json` prints the parsed trace |
 | `saffron accept [files... \| --all] [--include-unverified] [--with-feature-edit] [--propagate]` | Promote proposals (`--all` skips UNVERIFIED ones unless `--include-unverified`); `--with-feature-edit` rewrites adapted steps in the feature file; `--propagate` applies a heal's locator fix to every cache using that locator |
 | `saffron reject [files... \| --all]` | Discard proposals |
 | `saffron prune [--yes] [--check] [--json]` | List recordings no scenario owns any more; `--yes` deletes them, `--check` exits 1 for CI |
 | `saffron status [--json]` | Project overview: files and scenarios with cache state, tags, pending proposals, last run, history, vocabulary health, effective config |
 | `saffron steps [search] [--json] [--snippets]` | The step vocabulary with recorded/divergent/unrecorded badges |
-| `saffron author <prose-file>` | Draft a `.saffron` file from plain-paragraph requirements using the project vocabulary |
+| `saffron author <prose-file> [--provider p]` | Draft a `.saffron` file from plain-paragraph requirements using the project vocabulary |
+| `saffron login [provider]` | Check that a provider can record and heal here and list what is missing; `saffron login cursor` also runs Cursor's one-time sign-in, `saffron login antigravity` also allows Saffron's tools in agy |
 | `saffron mcp` / `saffron lsp` | MCP tools (`search_steps`, `list_step_sets`, `project_status`) for AI assistants / language server for editors |
 | `saffron init [--examples] [--agents list]` | Install this skill into the project's agent directories, register MCP, add an AGENTS.md block, scaffold config; `--examples` adds the Saucedemo example suite |
 | `saffron report [--merge [paths]]` | Open the latest HTML report; `--merge` combines a complete set of shard reports into `latest.json`, `latest.html` and one history line |
@@ -82,13 +86,18 @@ preflight (e.g. a missing `{env:VAR}`).
 
 ## AI access
 
-Recording and healing need Claude credentials: `ANTHROPIC_API_KEY`, or a
-Claude Code login on the machine. Replay-only runs (`--no-agent`) need
-none: that is the normal CI mode once caches are committed. With no
-`model` configured the Agent SDK's default model is used; set `model`
-(and `healModel`) to pin one. On a subscription login the report shows
-the 5-hour plan window used and the API-equivalent dollars; on a key it
-shows what was billed.
+Recording and healing need the configured provider's login on the machine.
+Claude (default): `ANTHROPIC_API_KEY`, or a Claude Code login. Codex: a
+ChatGPT-plan `npx @openai/codex login` plus `npm i -D @openai/codex-sdk`. Antigravity:
+Google's `agy` CLI, signed in once, then `npx saffron login antigravity`
+(allows Saffron's tools in agy's settings). Cursor: `npm i -D @cursor/sdk`
+and `npx saffron login cursor`. `npx saffron login` lists what is missing.
+Replay-only runs (`--no-agent`) need none: that is the normal CI mode once
+caches are committed. With no `model` configured the provider's default
+model is used; set `model` (and `healModel`) to pin one. On a Claude
+subscription login the report shows the 5-hour plan window used and the
+API-equivalent dollars; on a key it shows what was billed; Codex,
+Antigravity and Cursor report tokens only.
 
 ## IDE integration
 
