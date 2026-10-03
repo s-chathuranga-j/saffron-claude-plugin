@@ -63,13 +63,14 @@ your-project/
 | `provider` | Whose agent records and heals, on its login on this machine: `claude` (default), `codex` (ChatGPT plan), `antigravity` (Google AI Pro/Ultra via the `agy` CLI, experimental), `cursor`. Also `--provider` |
 | `model` | Model in the provider's own names (unset: the provider's default). A `--provider` run on another provider ignores it |
 | `healModel` | Cheaper model for heal sessions only |
+| `ci` | Where `saffron runs` and `import --run` find CI runs: `{"provider": "github" \| "azure", "organization": ..., "project": ...}`. Unset, an Azure Repos remote means Azure Pipelines (through `az`), anything else GitHub Actions (through `gh`). `organization` and `project` are for a GitHub repository built by Azure Pipelines |
 
 ## CLI
 
 | Command | Purpose |
 |---|---|
 | `saffron run [paths] [--filter @tag] [--no-agent] [--strict] [--browser b] [--workers n] [--shard i/n] [--shard-by scenario\|file] [--provider p] [--heal-model m] [--headed] [--trace mode]` | Run; cached replay, agent on misses/failures. `--shard 2/4` runs one part of the suite on one CI machine and writes `shard-2-of-4.json` instead of `latest.json`; `--trace retain-on-failure` keeps an execution trace of each scenario that is not green |
-| `saffron trace [scenario] [--port n] [--no-open] [--json]` | Open the execution replay of a scenario from the last run (scenario name, feature path or `feature:scenario`; default: every traced scenario in one replay, opening on a red one, else a yellow one); `--json` prints the parsed trace |
+| `saffron trace [scenario] [--port n] [--no-open] [--json] [--run startedAt]` | Open the execution replay of a scenario from the last run (scenario name, feature path or `feature:scenario`; default: every traced scenario in one replay, opening on a red one, else a yellow one); `--json` prints the parsed trace; `--run` opens it only while the last run is that one |
 | `saffron accept [files... \| --all] [--include-unverified] [--with-feature-edit] [--propagate]` | Promote proposals (`--all` skips UNVERIFIED ones unless `--include-unverified`); `--with-feature-edit` rewrites adapted steps in the feature file; `--propagate` applies a heal's locator fix to every cache using that locator |
 | `saffron reject [files... \| --all]` | Discard proposals |
 | `saffron prune [--yes] [--check] [--json]` | List recordings no scenario owns any more; `--yes` deletes them, `--check` exits 1 for CI |
@@ -80,9 +81,13 @@ your-project/
 | `saffron mcp` / `saffron lsp` | MCP tools (`search_steps`, `list_step_sets`, `project_status`) for AI assistants / language server for editors |
 | `saffron init [--examples] [--agents list]` | Install this skill into the project's agent directories, register MCP, add an AGENTS.md block, scaffold config; `--examples` adds the Saucedemo example suite |
 | `saffron report [--merge [paths]]` | Open the latest HTML report; `--merge` combines a complete set of shard reports into `latest.json`, `latest.html` and one history line |
+| `saffron export [-o file] [--branch name [--base branch]]` | In CI: pack the pending proposals, the run's report, screenshots and traces into `.saffron/reports/saffron-bundle.zip` to upload as an artifact. `--branch` also pushes the proposals as a new branch and opens a draft pull request (GitHub through `gh`, Azure DevOps through `az`); exit 1 only when the branch is pushed but the pull request could not be opened |
+| `saffron runs [--branch b] [--limit n] [--provider github\|azure] [--json]` | The branch's CI runs, with how many of each run's proposals are pending here; exit 2 when `gh` or `az` is missing or signed out |
+| `saffron import <bundles...> \| --run <id> [--overwrite] [--allow-unknown-repository] [--json]` | Bring a CI run's bundle into this checkout: its proposals (each checked against the files here), report and traces. Then `saffron diff` and `saffron accept` as usual. Exit 1 when a proposal was not imported, 2 when the bundle was refused |
 
 Exit codes: 0 green/yellow, 1 red (or yellow with `--strict`), 2 usage /
-preflight (e.g. a missing `{env:VAR}`).
+preflight (e.g. a missing `{env:VAR}`) or any expected failure, printed as
+one line (`SAFFRON_DEBUG=1` shows the stack).
 
 ## AI access
 

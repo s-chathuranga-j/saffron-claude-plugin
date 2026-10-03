@@ -142,6 +142,7 @@ npx saffron accept <file> [<file>...]    # promote chosen ones
 npx saffron reject <file> [<file>...]    # discard chosen ones; the agent retries next run
 npx saffron report                       # open the HTML report
 npx saffron run --rerecord --filter @t   # a recording is wrong: record it fresh
+npx saffron runs                         # this branch's CI runs; a heal made there: saffron import --run <id>
 ```
 
 Results: **green** = cached pass · **yellow** = pending review (an AI
@@ -167,6 +168,15 @@ keeps the placeholder, so every row satisfies it.
 unless deliberately authoring a manual cache (`"recordedBy": "manual"`).
 To change behavior, change the `.feature`/`.saffron` text and let the run
 re-record (mostly seeded from existing step recordings).
+
+**Review a CI heal.** A heal made in CI travels as a bundle (`saffron
+export` in the workflow, uploaded as an artifact). On the reviewer's
+checkout, `saffron runs` lists the branch's CI runs and `saffron import
+--run <id>` (or `saffron import <bundle>`) files the run's proposals,
+report and traces here, each checked against this checkout; then
+`saffron diff`, `saffron accept` and commit `.saffron/cache/` as usual.
+With `saffron export --branch <name>` CI pushes the proposals as a branch
+with a draft pull request instead: switch to it, accept, commit, push.
 
 ## Anti-patterns that cost money or hide bugs
 
