@@ -175,7 +175,7 @@ When I enter "Great tool" in the feedback comment and send it   # inside an ifra
 Then the feedback widget should show "Thanks for: Great tool"
 ```
 
-Upload paths resolve from the working directory. Links that open new
+Upload paths resolve from the project root. Links that open new
 tabs are followed automatically.
 
 ## Tabs (plain prose, no keyword)
