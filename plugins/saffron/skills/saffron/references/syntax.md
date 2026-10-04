@@ -232,4 +232,9 @@ Scenario: Checkout happy path
 Scenario: ...
 ```
 
-`saffron run --filter @smoke`.
+`saffron run --filter @smoke`. `--filter` takes a tag expression:
+`and`, `or`, `not` and parentheses, with `and` binding tighter than `or`
+(`--filter "@e2e and not @wip"`, `--filter "(@smoke or @sanity) and not
+@flaky"`). A comma, `|`, a space or a repeated `--filter` between plain
+tags means `or`; once `and`, `not` or a parenthesis appears, join every
+tag with `and` or `or`. The `@` may be left out.

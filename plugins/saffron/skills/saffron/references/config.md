@@ -69,7 +69,7 @@ your-project/
 
 | Command | Purpose |
 |---|---|
-| `saffron run [paths] [--filter @tag] [--no-agent] [--strict] [--browser b] [--workers n] [--shard i/n] [--shard-by scenario\|file] [--provider p] [--heal-model m] [--headed] [--trace mode]` | Run; cached replay, agent on misses/failures. `--shard 2/4` runs one part of the suite on one CI machine and writes `shard-2-of-4.json` instead of `latest.json`; `--trace retain-on-failure` keeps an execution trace of each scenario that is not green |
+| `saffron run [paths] [--filter <tag expression>] [--no-agent] [--strict] [--browser b] [--workers n] [--shard i/n] [--shard-by scenario\|file] [--provider p] [--heal-model m] [--headed] [--trace mode]` | Run; cached replay, agent on misses/failures. `--filter` takes tags or an expression (`"@e2e and not @wip"`). `--shard 2/4` runs one part of the suite on one CI machine and writes `shard-2-of-4.json` instead of `latest.json`; `--trace retain-on-failure` keeps an execution trace of each scenario that is not green |
 | `saffron trace [scenario] [--port n] [--no-open] [--json] [--run startedAt]` | Open the execution replay of a scenario from the last run (scenario name, feature path or `feature:scenario`; default: every traced scenario in one replay, opening on a red one, else a yellow one); `--json` prints the parsed trace; `--run` opens it only while the last run is that one |
 | `saffron accept [files... \| --all] [--include-unverified] [--with-feature-edit] [--propagate]` | Promote proposals (`--all` skips UNVERIFIED ones unless `--include-unverified`); `--with-feature-edit` rewrites adapted steps in the feature file; `--propagate` applies a heal's locator fix to every cache using that locator |
 | `saffron reject [files... \| --all]` | Discard proposals |
@@ -81,6 +81,7 @@ your-project/
 | `saffron mcp` / `saffron lsp` | MCP tools (`search_steps`, `list_step_sets`, `project_status`) for AI assistants / language server for editors |
 | `saffron init [--examples] [--agents list]` | Install this skill into the project's agent directories, register MCP, add an AGENTS.md block, scaffold config; `--examples` adds the Saucedemo example suite |
 | `saffron report [--merge [paths]]` | Open the latest HTML report; `--merge` combines a complete set of shard reports into `latest.json`, `latest.html` and one history line |
+| `saffron dashboard [--stdout] [--no-open]` | The suite's quality from the run history (failing and for how long, flaky, repeatedly healed, never run, slowest, trends, per tag); writes and opens `.saffron/reports/dashboard.html`, `--stdout` prints it |
 | `saffron export [-o file] [--branch name [--base branch]]` | In CI: pack the pending proposals, the run's report, screenshots and traces into `.saffron/reports/saffron-bundle.zip` to upload as an artifact. `--branch` also pushes the proposals as a new branch and opens a draft pull request (GitHub through `gh`, Azure DevOps through `az`); exit 1 only when the branch is pushed but the pull request could not be opened |
 | `saffron runs [--branch b] [--limit n] [--provider github\|azure] [--json]` | The branch's CI runs, with how many of each run's proposals are pending here; exit 2 when `gh` or `az` is missing or signed out |
 | `saffron import <bundles...> \| --run <id> [--overwrite] [--allow-unknown-repository] [--json]` | Bring a CI run's bundle into this checkout: its proposals (each checked against the files here), report and traces. Then `saffron diff` and `saffron accept` as usual. Exit 1 when a proposal was not imported, 2 when the bundle was refused |
@@ -119,8 +120,37 @@ npx playwright install chromium
 npx saffron run --no-agent --strict     # replay committed caches; no AI, no surprises
 ```
 
-Record and heal on developer machines (or a dedicated job with
-credentials), review proposals in PRs like snapshot updates.
+Record new scenarios on developer machines. A CI job that may heal (it
+has the provider's login or key) runs without `--no-agent`, and its heals
+travel to the reviewer as a bundle, never lost with the CI workspace:
+
+```yaml
+# GitHub Actions
+- run: npx saffron run --strict
+- name: Saffron bundle
+  if: failure()
+  run: npx saffron export --out saffron-bundle.zip
+- uses: actions/upload-artifact@v4
+  if: failure()
+  with:
+    name: saffron-bundle
+    path: saffron-bundle.zip
+```
+
+Azure Pipelines is the same: `saffron export --out
+$(Build.ArtifactStagingDirectory)/saffron-bundle.zip`, then publish it as
+the `saffron-bundle` artifact. Keep the artifact name starting with
+`saffron-bundle`: that is what `saffron import --run` and both editors'
+CI runs views download. Upload a file outside `.saffron/` (`--out`), as
+`upload-artifact` leaves hidden folders out.
+
+On the reviewer's checkout: `npx saffron runs`, then `npx saffron import
+--run <id>`, then `saffron diff`, `saffron accept` and commit
+`.saffron/cache/`. For review in a pull request instead, add `--branch
+saffron/heal-<run id>` to the export step: CI pushes the proposals (not
+the caches) as a branch and opens a draft pull request whose description
+says how to accept them; it needs a token that may push and open pull
+requests.
 
 ## Reading a report
 

@@ -132,7 +132,7 @@ Scenario: Checkout happy path
 
 ```bash
 npx saffron run                          # record misses, replay hits, heal failures
-npx saffron run --filter @smoke          # by tag (comma-separate several; any of them)
+npx saffron run --filter @smoke          # by tag; or an expression: "@e2e and not @wip", "(@smoke or @sanity) and not @flaky"
 npx saffron run --no-agent               # replay only (CI without AI access)
 npx saffron status                       # what is cached, pending, tagged; vocabulary health
 npx saffron diff                         # what a proposal changes, action by action: the evidence
@@ -141,7 +141,9 @@ npx saffron accept --all                 # promote verified proposals to caches
 npx saffron accept <file> [<file>...]    # promote chosen ones
 npx saffron reject <file> [<file>...]    # discard chosen ones; the agent retries next run
 npx saffron report                       # open the HTML report
+npx saffron dashboard                    # suite quality: failing, flaky, never run, slowest, per tag
 npx saffron run --rerecord --filter @t   # a recording is wrong: record it fresh
+npx saffron trace "<scenario>"           # a red or healed scenario, step by step, with the page at every action ("trace" on in config)
 npx saffron runs                         # this branch's CI runs; a heal made there: saffron import --run <id>
 ```
 
