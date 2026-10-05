@@ -145,6 +145,7 @@ npx saffron dashboard                    # suite quality: failing, flaky, never 
 npx saffron run --rerecord --filter @t   # a recording is wrong: record it fresh
 npx saffron trace "<scenario>"           # a red or healed scenario, step by step, with the page at every action ("trace" on in config)
 npx saffron runs                         # this branch's CI runs; a heal made there: saffron import --run <id>
+npx saffron report --run <id>            # a CI run's results without importing (kept in .saffron/ci/)
 ```
 
 Results: **green** = cached pass · **yellow** = pending review (an AI

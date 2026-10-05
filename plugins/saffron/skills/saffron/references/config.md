@@ -12,6 +12,7 @@ your-project/
     history.jsonl         one line per run (trends)    → commit recommended
     reports/              latest.html / latest.json    → git-ignore
     artifacts/            screenshots and traces (latest run)  → git-ignore
+    ci/                   CI runs viewed without importing     → ignored by its own .gitignore
 ```
 
 ## `saffron.config.json`
@@ -70,7 +71,7 @@ your-project/
 | Command | Purpose |
 |---|---|
 | `saffron run [paths] [--filter <tag expression>] [--no-agent] [--strict] [--browser b] [--workers n] [--shard i/n] [--shard-by scenario\|file] [--provider p] [--heal-model m] [--headed] [--trace mode]` | Run; cached replay, agent on misses/failures. `--filter` takes tags or an expression (`"@e2e and not @wip"`). `--shard 2/4` runs one part of the suite on one CI machine and writes `shard-2-of-4.json` instead of `latest.json`; `--trace retain-on-failure` keeps an execution trace of each scenario that is not green |
-| `saffron trace [scenario] [--port n] [--no-open] [--json] [--run startedAt]` | Open the execution replay of a scenario from the last run (scenario name, feature path or `feature:scenario`; default: every traced scenario in one replay, opening on a red one, else a yellow one); `--json` prints the parsed trace; `--run` opens it only while the last run is that one |
+| `saffron trace [scenario] [--port n] [--no-open] [--json] [--run startedAt]` | Open the execution replay of a scenario from the last run (scenario name, feature path or `feature:scenario`; default: every traced scenario in one replay, opening on a red one, else a yellow one); `--json` prints the parsed trace; `--run` opens it only while the last run is that one; `--run <CI run id>` replays a CI run's traces from `.saffron/ci/` instead, view only (no Accept or Reject) |
 | `saffron accept [files... \| --all] [--include-unverified] [--include-imported] [--with-feature-edit] [--propagate]` | Promote proposals (`--all` skips ones that are UNVERIFIED or not checked unless `--include-unverified`, and ones imported from a CI run unless `--include-imported`; a named file is accepted as before); `--with-feature-edit` rewrites adapted steps in the feature file; `--propagate` applies a heal's locator fix to every cache using that locator |
 | `saffron reject [files... \| --all]` | Discard proposals |
 | `saffron prune [--yes] [--check] [--json]` | List recordings no scenario owns any more; `--yes` deletes them, `--check` exits 1 for CI |
@@ -80,7 +81,7 @@ your-project/
 | `saffron login [provider]` | Check that a provider can record and heal here and list what is missing; `saffron login cursor` also runs Cursor's one-time sign-in, `saffron login antigravity` also allows Saffron's tools in agy |
 | `saffron mcp` / `saffron lsp` | MCP tools (`search_steps`, `list_step_sets`, `project_status`) for AI assistants / language server for editors |
 | `saffron init [--examples] [--agents list]` | Install this skill into the project's agent directories, register MCP, add an AGENTS.md block, scaffold config; `--examples` adds the Saucedemo example suite |
-| `saffron report [--merge [paths]]` | Open the latest HTML report; `--merge` combines a complete set of shard reports into `latest.json`, `latest.html` and one history line |
+| `saffron report [--merge [paths]] \| --run <id> [--provider p] [--allow-fork] [--max-download MB] [--json]` | Open the latest HTML report; `--merge` combines a complete set of shard reports into `latest.json`, `latest.html` and one history line. `--run` views a CI run's results without importing: downloaded once into `.saffron/ci/` (newest 10 runs, 1 GB, fixed), checked like an import, proposals judged importable or not with the reason, nothing filed. No bundle exits 0 with `reasonKind` `running`, `expired` or `none`; over `--max-download` exits 2 with `kind: "too-large"` and `sizeBytes`. `saffron import --run` reuses the download |
 | `saffron dashboard [--stdout] [--no-open]` | The suite's quality from the run history (failing and for how long, flaky, repeatedly healed, never run, slowest, trends, per tag); writes and opens `.saffron/reports/dashboard.html`, `--stdout` prints it |
 | `saffron export [-o file] [--branch name [--base branch]]` | Pack the pending proposals, the run's report, screenshots and traces into one bundle (default `.saffron/reports/saffron-bundle.zip`). In CI write it with `--out <file outside .saffron>` and upload that file as an artifact (`upload-artifact` skips hidden folders). `--branch` also pushes the proposals as a new branch and opens a draft pull request (GitHub through `gh`, Azure DevOps through `az`); exit 1 only when the branch is pushed but the pull request could not be opened |
 | `saffron runs [--branch b] [--limit n] [--provider github\|azure] [--json]` | The branch's CI runs, with how many of each run's proposals are pending here; exit 2 when `gh` or `az` is missing or signed out |
