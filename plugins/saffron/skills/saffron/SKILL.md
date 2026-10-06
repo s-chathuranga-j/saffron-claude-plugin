@@ -134,6 +134,8 @@ Scenario: Checkout happy path
 npx saffron run                          # record misses, replay hits, heal failures
 npx saffron run --filter @smoke          # by tag; or an expression: "@e2e and not @wip", "(@smoke or @sanity) and not @flaky"
 npx saffron run --no-agent               # replay only (CI without AI access)
+npx saffron run features/login.saffron:12   # one scenario: any line in it (an Examples row runs that row)
+npx saffron run "features/login.saffron:Successful login"   # one scenario, by name
 npx saffron status                       # what is cached, pending, tagged; vocabulary health
 npx saffron diff                         # what a proposal changes, action by action: the evidence
 npx saffron accept                       # list pending proposals with narratives
@@ -146,7 +148,16 @@ npx saffron run --rerecord --filter @t   # a recording is wrong: record it fresh
 npx saffron trace "<scenario>"           # a red or healed scenario, step by step, with the page at every action ("trace" on in config)
 npx saffron runs                         # this branch's CI runs; a heal made there: saffron import --run <id>
 npx saffron report --run <id>            # a CI run's results without importing (kept in .saffron/ci/)
+npx saffron run --browser chromium,firefox,webkit --no-agent   # every engine, one report, a row per browser
+npx saffron run --device "iPhone 15"     # under a Playwright device profile (or --viewport 1280x720)
 ```
+
+A red in one browser only, or only under a device profile, is a real
+difference in the app, not flakiness: read that row's trace
+(`saffron trace "<feature>:<scenario>@firefox"`) before re-recording
+anything. Recordings are browser- and size-neutral; do not record a copy
+per browser. `--agent-workers N` runs N recordings or heals at once (each
+a paid session): leave it at 1 unless the user asks for speed.
 
 Results: **green** = cached pass · **yellow** = pending review (an AI
 recording or adaptation filed a proposal) · **red** = failed. Proposals
@@ -198,4 +209,5 @@ with a draft pull request instead: switch to it, accept, commit, push.
 - [Syntax cheat sheet](references/syntax.md): tables, doc strings,
   outlines, secrets, dates, network waits, page furniture, StepSets.
 - [Configuration & CI](references/config.md): `saffron.config.json`,
-  flags, `--strict`, cross-browser, workers, heal model, secrets setup.
+  flags, `--strict`, cross-browser and browser matrix, devices, workers
+  and agent workers, heal model, secrets setup.
