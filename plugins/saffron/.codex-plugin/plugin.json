@@ -1,0 +1,38 @@
+{
+  "name": "saffron",
+  "version": "1.0.0",
+  "description": "Write end-to-end UI tests in plain language with Saffron: an AI agent records each scenario once, every later run replays at zero tokens. Adds the saffron MCP server (search_steps, list_step_sets, project_status) and the Saffron agent skill.",
+  "author": {
+    "name": "Chathuranga Jayasinghe",
+    "email": "genius.chathuranga@gmail.com"
+  },
+  "homepage": "https://saffron-ai.io",
+  "repository": "https://github.com/s-chathuranga-j/saffron-claude-plugin",
+  "license": "Saffron Free Use License v1.0",
+  "keywords": [
+    "saffron",
+    "gherkin",
+    "e2e",
+    "playwright",
+    "testing"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Saffron",
+    "shortDescription": "Plain-language end-to-end UI tests",
+    "longDescription": "Write .saffron and .feature tests in plain language. An AI agent records each scenario once and every later run replays at zero tokens. The MCP tools let Codex reuse your recorded wordings and see what is cached, pending review and tagged.",
+    "developerName": "Chathuranga Jayasinghe",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Instructions",
+      "Read"
+    ],
+    "websiteURL": "https://saffron-ai.io",
+    "defaultPrompt": [
+      "Write a Saffron test for the login flow",
+      "Which steps are already recorded?",
+      "Review the pending Saffron cache proposals"
+    ]
+  }
+}

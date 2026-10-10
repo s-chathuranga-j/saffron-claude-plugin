@@ -12,8 +12,9 @@ One plugin gives Claude Code everything it needs to write and maintain
   `project_status`, so Claude reuses your recorded wordings and knows what
   is cached, pending review and tagged.
 - **The Saffron agent skill**: reuse the vocabulary, keep `Then` steps
-  sacred, secrets as `{env:VAR}`, StepSet syntax, the run → review →
-  accept workflow.
+  sacred, secrets as `{env:VAR}` and shared values as `{data:...}`,
+  StepSets, several people in one scenario (`As "buyer"`), the
+  run → review → accept workflow, and reviewing a heal made in CI.
 
 ## Install
 
@@ -26,6 +27,24 @@ The language server and MCP server run `saffron-ai` through `npx`,
 pinned to the version this plugin was built from; the first start
 downloads it. Recording and healing need Claude credentials in the
 project as usual (`npx saffron run`); the plugin itself needs nothing.
+
+### Codex
+
+```
+codex plugin marketplace add s-chathuranga-j/saffron-claude-plugin
+codex plugin add saffron@saffron
+```
+
+Codex gets the MCP server and the skill; its plugins have no language
+server slot.
+
+## License
+
+Free to install and use, including commercially, under the
+[Saffron Free Use License v1.0](LICENSE). The tests, caches, reports and
+other files Saffron produces from your work are yours. You may not
+modify or redistribute Saffron itself. AI calls run on your own
+credentials, so any charges are on your account.
 
 ## Source
 

@@ -9,8 +9,8 @@
     {
       "name": "saffron",
       "source": "./plugins/saffron",
-      "description": "Language server, MCP tools and agent skill for Saffron .saffron / .feature tests.",
-      "version": "0.9.9",
+      "description": "End-to-end UI tests in plain language, recorded once by AI and replayed at zero tokens: language server, MCP tools and agent skill.",
+      "version": "1.0.0",
       "category": "testing",
       "keywords": [
         "saffron",

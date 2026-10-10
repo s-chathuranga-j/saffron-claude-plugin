@@ -1,6 +1,8 @@
 # Saffron syntax cheat sheet
 
-Everything valid Gherkin is valid Saffron. `.saffron` files add `StepSet:`.
+A `.feature` file runs as it is. `.saffron` files go further: `StepSet:`,
+several people per scenario (`As "name"`), `{data:...}` outlines and
+everything below.
 
 ## Steps
 
@@ -143,6 +145,11 @@ is 9 digits.
 - Say the intent: "select a check-in date 1 day from today" → recorded
   as `{date+1}`; stays valid every day. Formats: `{date}`, `{date-3}`,
   `{date+1:DD.MM.YYYY}`.
+- A date written out (step text, table, doc string, `{data:...}`,
+  `{env:...}`) is entered as written on every run. In an Outline, each
+  Examples row's `{date+N}` cell, in any format, gives that row its own day.
+- Text assertions read only what the page shows: hidden text, hidden
+  options and hidden parts of an element never satisfy them.
 - Capture and compare displayed values instead of literals:
 
 ```gherkin
@@ -192,6 +199,29 @@ Recorded as `switchTab` / `closeTab` / `newTab` with 0-based tab indexes
 in creation order; replay repeats them in order. Say which tab in the
 step ("the first tab", "the preview tab") so the recording is unambiguous.
 
+## Several people: `As "name"` (browser sessions)
+
+```gherkin
+Given As "seller" I am on the orders page
+When As "buyer" I order the blue lamp        # the buyer's own browser
+Then As "seller" I see an order for the blue lamp
+And the order is marked new                  # still the seller
+```
+
+A step starting `As "name"` runs in that person's browser session: a
+browser context with its own cookies, storage, login and tabs. The
+session carries over to the following steps until another `As "..."`;
+steps before the first one run in the default session, and `As "default"`
+goes back to it. Names are case-sensitive. Each session keeps
+its page while another one acts. Give a session its own login with
+`"sessions": { "buyer": { "storageState": ".auth/buyer.json" } }` in
+`saffron.config.json`; a session without an entry starts from the
+top-level `storageState`, and the run warns when two such people would
+start as the same user. Keep the `As "..."` when rewording a step: it
+decides where that step and the ones after it run. A recording is reused
+only in its own session (named or carried over); a session taken from an
+Examples column (`As "<who>"`) is never reused across rows.
+
 ## StepSets (`.saffron` only)
 
 ```gherkin
@@ -238,3 +268,74 @@ Scenario: ...
 @flaky"`). A comma, `|`, a space or a repeated `--filter` between plain
 tags means `or`; once `and`, `not` or a parenthesis appears, join every
 tag with `and` or `or`. The `@` may be left out.
+
+## A complete file
+
+How the pieces fit in one project. The shared sign-in lives in a
+sets-only library file:
+
+```gherkin
+# features/shared.steps.saffron
+Feature: Shared steps
+
+StepSet: Sign in as admin
+    Given I am on the sign-in page
+    When I enter "{data:users.admin.email}" in the email field
+    And I enter "{env:ADMIN_PASSWORD}" in the password field
+    And I click the "Sign in" button
+    Then I should see the dashboard
+```
+
+```gherkin
+# features/orders.saffron
+Feature: Orders
+
+  Background:
+    Given I open the application
+    And I accept cookies if prompted
+
+  @smoke @orders
+  Scenario: Admin cancels a new order
+    StepSet Sign in as admin
+    When I open the orders page
+    And I filter the orders by status "New"
+    And I record the first order number as "order"
+    And I cancel the first order and confirm the dialog
+    Then "order" should be shown with status "Cancelled"
+    And I should not see an error banner
+
+  @orders
+  Scenario: Admin adds a note to an order
+    StepSet Sign in as admin
+    When I open the first order
+    And I add the note
+      """
+      Customer asked for delivery after 5pm.
+      """
+    Then the saved note should be shown
+
+  @smoke
+  Scenario Outline: Each role sees its own menu
+    Given I sign in as a <role> user
+    Then I should see the "<menu>" menu
+
+    Examples: {data:roles}
+```
+
+`data/users.json` holds `{"admin": {"email": "admin@shop.test"}}` and
+`data/roles.csv` has a `role,menu` header with one row per role;
+`ADMIN_PASSWORD` comes from the environment or a git-ignored `.env`.
+What each part buys:
+
+- **Background** holds only what every scenario needs; anything that
+  differs per scenario belongs in the scenario.
+- **The StepSet** signs in identically everywhere, so it records once
+  and every caller replays it.
+- **Captured values** (`record ... as "order"`) instead of a literal
+  order number, which changes every run.
+- **The doc string** records as `<docstring>`: reword the note and
+  replay stays free.
+- **The outline** records once on the first row; every other row, and
+  every row added to `roles.csv` later, replays at zero tokens.
+- **Each scenario ends in its `Then` block**, the strict verdict that is
+  never healed.
