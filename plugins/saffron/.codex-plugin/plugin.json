@@ -18,10 +18,11 @@
   ],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
+  "requires_local_executor": true,
   "interface": {
     "displayName": "Saffron",
-    "shortDescription": "Plain-language end-to-end UI tests",
-    "longDescription": "Write .saffron and .feature tests in plain language. An AI agent records each scenario once and every later run replays at zero tokens. The MCP tools let Codex reuse your recorded wordings and see what is cached, pending review and tagged.",
+    "shortDescription": "UI tests in plain language",
+    "longDescription": "Write .saffron and .feature tests in plain language. An AI agent records each scenario once and cached runs replay at zero tokens. The local MCP tools search your project's vocabulary, list StepSets and read project status so Codex can reuse recorded wordings. Requires Node.js 22.12 or later. Recording and healing require Playwright browsers and a configured AI provider; AI usage is charged to your own account. Runs locally and reads files in the current project. Codex receives the MCP server and authoring skill; the language server is available in Claude Code only.",
     "developerName": "Chathuranga Jayasinghe",
     "category": "Developer Tools",
     "capabilities": [
@@ -29,6 +30,9 @@
       "Read"
     ],
     "websiteURL": "https://saffron-ai.io",
+    "supportURL": "https://github.com/s-chathuranga-j/saffron-community/issues",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png",
     "defaultPrompt": [
       "Write a Saffron test for the login flow",
       "Which steps are already recorded?",
