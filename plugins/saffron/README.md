@@ -70,5 +70,9 @@ credentials, so any charges are on your account.
 
 ## Source
 
-Built from the `claude-plugin/` folder of the Saffron runner. Issues:
-https://github.com/s-chathuranga-j/saffron-ai/issues.
+Built from the `claude-plugin/` folder of the Saffron runner.
+
+- [Documentation](https://saffron-ai.io/docs)
+- [Privacy](https://github.com/s-chathuranga-j/saffron-claude-plugin/blob/main/plugins/saffron/README.md#requirements-and-data-handling)
+- [Terms of service](https://github.com/s-chathuranga-j/saffron-claude-plugin/blob/main/plugins/saffron/LICENSE)
+- [Support](https://github.com/s-chathuranga-j/saffron-community/issues)
