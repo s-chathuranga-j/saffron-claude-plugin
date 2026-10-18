@@ -31,6 +31,8 @@
     ],
     "websiteURL": "https://saffron-ai.io",
     "supportURL": "https://github.com/s-chathuranga-j/saffron-community/issues",
+    "privacyPolicyURL": "https://github.com/s-chathuranga-j/saffron-claude-plugin/blob/main/plugins/saffron/README.md#requirements-and-data-handling",
+    "termsOfServiceURL": "https://github.com/s-chathuranga-j/saffron-claude-plugin/blob/main/plugins/saffron/LICENSE",
     "composerIcon": "./assets/icon.png",
     "logo": "./assets/icon.png",
     "defaultPrompt": [
