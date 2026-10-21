@@ -61,6 +61,8 @@ your-project/
 | `trace` | `off` (default), `on` or `retain-on-failure`: keep an execution trace per scenario; `saffron trace` opens it as a replay with the page inspectable at every step |
 | `browser` | `chromium` / `chrome` / `msedge` / `firefox` / `webkit`: replay runs anywhere; recording and healing need one of the first three. `chrome` and `msedge` must be installed on the machine. A list runs the suite in each into one report (browser matrix; Chromium-family first) |
 | `device` / `viewport` | A Playwright device profile (`"iPhone 15"`) and/or a `"WIDTHxHEIGHT"` size for every scenario; a desktop recording replays under it or fails at the step that differs |
+| `timezone` | IANA zone (`"Europe/Berlin"`) the browser runs in and `{date...}` tokens count days in (default: the machine's) |
+| `dateLocale` | Locale of month and weekday names in `{date...}` tokens that name none (default `en-US`) |
 | `workers` | Parallel replay workers |
 | `agentWorkers` | Agent sessions (record, heal) that may run at once, each in its own browser (default 1; each is a paid session) |
 | `shardBy` | How `--shard` splits the suite: `"scenario"` (default) or `"file"` (each feature file on one machine) |

@@ -21,7 +21,10 @@ trailing block of assertions is always strict; under the opt-in
 ## Scenario Outlines
 
 One cache serves every row: `<param>` placeholders stay in the cache and
-resolve per row at replay.
+resolve per row at replay. Two exceptions: a recording bound to its row
+(a row value it cannot write as `<param>`) refuses the other rows with
+guidance, and a row whose value needs it (a blank first row) records
+once more. See "A recording bound to its row" in HOW-TO-USE.
 
 ```gherkin
 Scenario Outline: Failed login shows an error
@@ -126,7 +129,8 @@ Scenario Outline: Role sees its menu
 
 Reads `data/roles.csv` (header row = placeholder names) or a JSON list of
 records. One recording, one zero-token replay per row; adding a row records
-nothing. A placeholder with no column is a parse error naming both.
+nothing, unless the recording is bound to its row (the row is refused
+with guidance) or the row's value needs one more recording. A placeholder with no column is a parse error naming both.
 
 ### Unique per run: `{unique:name}`
 
@@ -144,7 +148,16 @@ is 9 digits.
 
 - Say the intent: "select a check-in date 1 day from today" → recorded
   as `{date+1}`; stays valid every day. Formats: `{date}`, `{date-3}`,
-  `{date+1:DD.MM.YYYY}`.
+  `{date+1:DD.MM.YYYY}`, `{date+7:MMM D, YYYY}` (Oct 24, 2026), and with
+  a locale `{date+7:ddd, D. MMM:de-DE}` (Sa., 24. Okt.). Fields: `YYYY`
+  `YY` `MMMM` `MMM` `MM` `M` `DD` `D` `dddd` `ddd`. Names default to
+  `dateLocale` in the config, else en-US.
+- A displayed range is one token: `{date+7 - +9:MMM D, YYYY}` is "Oct 24 -
+  26, 2026" (and "Oct 30 - Nov 1, 2026" across a month): the text between
+  the offsets is the separator, the second offset keeps its sign, shared
+  month and year are written once. Two tokens write both days in full.
+  Write the day picked and the range checked as tokens: they resolve on
+  one clock, so no setup script is needed.
 - A date written out (step text, table, doc string, `{data:...}`,
   `{env:...}`) is entered as written on every run. In an Outline, each
   Examples row's `{date+N}` cell, in any format, gives that row its own day.
@@ -154,8 +167,10 @@ is 9 digits.
 
 ```gherkin
 When I record the displayed total as "before"
+And I record the nightly rate as "night"
 And I add another night
 Then "before" should differ from the displayed total
+And the displayed total should be "before" plus "night"
 And the total should match "NOK [\d,]+"
 And the "Book" link should point to "/booking"
 ```
@@ -180,10 +195,15 @@ When I upload the file "examples/sample.txt" as the attachment
 When I drag the task card onto the done column
 When I enter "Great tool" in the feedback comment and send it   # inside an iframe: just interact
 Then the feedback widget should show "Thanks for: Great tool"
+When I add the stay to my Apple Calendar                    # a click that downloads a file
+Then the calendar file should contain "DTSTART;VALUE=DATE:{date+7:YYYYMMDD}"
 ```
 
 Upload paths resolve from the project root. Links that open new
-tabs are followed automatically.
+tabs are followed automatically. A download is waited for and kept with
+the run's artifacts, and a `Then` step can check the file's text (UTF-8
+text up to 5 MB); write a date in it as a `{date+N:FORMAT}` token, never
+as today's value.
 
 ## Tabs (plain prose, no keyword)
 
@@ -336,6 +356,8 @@ What each part buys:
 - **The doc string** records as `<docstring>`: reword the note and
   replay stays free.
 - **The outline** records once on the first row; every other row, and
-  every row added to `roles.csv` later, replays at zero tokens.
+  every row added to `roles.csv` later, replays at zero tokens (unless
+  the recording is bound to its row, see "A recording bound to its row"
+  in HOW-TO-USE).
 - **Each scenario ends in its `Then` block**, the strict verdict that is
   never healed.

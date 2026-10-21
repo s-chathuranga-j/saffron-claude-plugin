@@ -89,7 +89,7 @@ means visible.
 - Secrets: `{env:VAR}`, as in `When I enter "{env:ADMIN_PASSWORD}" in the password field`.
 - Shared test data (accounts, names, enum values): put it in `data/*.json` and write `{data:users.admin.email}` (file, then dotted path; one value, not a list). The recording stores the token, so editing the file changes the next replay at zero tokens. Never for secrets: data files are committed. To check a whole list (an enum), point a Then step at it: `Then the status filter should list every {data:enums.OrderStatus}`; replay iterates the file's list, so adding a value needs no re-record. `Examples: {data:roles}` reads outline rows from `data/roles.csv` or a JSON list (`.saffron` only). A value that must be new on every run (an email for a sign-up) is `{unique:name}`: fresh per run, the same within it.
 - State the application must be in before the suite (seeded users, a reset database): do not script it through the UI in every scenario. The project's `saffron.config.json` takes `"setup"` and `"teardown"` shell commands, run once around `saffron run` (teardown always runs). Propose a seed script there; keep scenario steps for the behaviour under test.
-- Dates: write intent when the day should move ("1 day from today" records as `{date+1}`); a date you write out (`I enter 2026-10-10`, in a table, a data file or `{env:...}`) is entered as written on every run. An Examples cell such as `{date+2:DD.MM.YYYY}` gives each row its own day.
+- Dates: write intent when the day should move ("1 day from today" records as `{date+1}`); a date you write out (`I enter 2026-10-10`, in a table, a data file or `{env:...}`) is entered as written on every run. An Examples cell such as `{date+2:DD.MM.YYYY}` gives each row its own day. A date the app shows in words or as a range is a token too (`{date+7:D. MMM:de-DE}`, `{date+7 - +9:MMM D, YYYY}`), never a setup script.
 - Dynamic display values: capture and compare, e.g. `I record the total as "first"` … `"first" should differ from the displayed total`.
 
 ## Authoring workflow
@@ -122,6 +122,15 @@ means visible.
    If a shared StepSet changes, include its affected callers. Avoid a
    whole-suite recording or disabling reuse by default. Re-record a faulty
    recording only after diagnosing its failed step and proof evidence.
+   **Record shared setup once, and accept it before the rest.** Step reuse
+   copies steps only from accepted recordings (`.saffron/cache/`). A
+   pending proposal replays for its own scenario and its Examples rows,
+   never for other scenarios, by design: an unreviewed recording must not
+   spread. So when new scenarios share a Background or StepSet, record one
+   of them, review and accept its proposal (steps 6 and 7), then record
+   the others: they replay the shared steps at zero tokens and the agent
+   records only what differs. Recording them all before accepting anything
+   pays for the shared steps in every scenario.
 6. **Review what was recorded.** Use `saffron diff` and the report/trace.
    Check that captures and comparisons use the same names and intended
    elements, waits observe the real signal, and final assertions contain
@@ -153,9 +162,24 @@ means visible.
 - **Keep the target and value comparable.** Compare the same date, item,
   or row across the change. If testing an amount change, capture amount-only
   text, not a whole button label containing a date, currency, or guest count.
-  Saffron's capture stores text; calling it "numeric" does not add numeric
-  parsing or arithmetic. Do not request unsupported calculations as though
-  they were available replay operations.
+- **State the arithmetic when the amount matters.** "Changed" does not
+  prove "added the add-on's price". Capture each input, then say the sum:
+  `I record the basket total as "before"`, `I record the breakfast price as
+  "breakfast"`, then `Then the basket total should be "before" plus
+  "breakfast"`. Replay reads the one number each element shows, in either
+  decimal style, and compares to the cent. Minus and "times 2" work too;
+  percentages, rounding rules and taxes do not.
+- **Check the route, not only the destination.** When the requirement is
+  a path (a 3DS challenge, a redirect, a confirmation dialog), add a
+  mid-scenario `Then` for each checkpoint, such as `Then I should see the
+  card authentication challenge`, before the final verdict. A success page
+  alone does not prove which way the flow went. Name the exact control a
+  variant uses (`the "Guarantee your booking by card" button`, not "pay");
+  two similar buttons are not interchangeable.
+- **Name the section a step acts in** when the page repeats labels (a
+  guest form and a booker form): `I replace "E-mail" in "Guest information"
+  with "..."`. The recording is then scoped to that section, so it acts on
+  the right form even when both are shown.
 - **Wait for an observed result.** State the relevant visible state or API
   response instead of `finished loading` without a signal or a fixed sleep.
   A currency option called `GBP` may display `£` on prices. Use the observed
@@ -263,9 +287,12 @@ One recording serves every row, and it cannot tell whether a row value
 glued inside other text belongs to the row (an email built from `<user>`,
 `INV20261013`, `orders-US`) or a field lists every row's value. Write
 `<column>` in every step whose text or typed value depends on the row;
-otherwise the other rows fail red naming the column, and some cases
-(dates without a year, two-letter values, blank cells) are not caught at
-all. Keep a check that lists all rows' values out of the Outline.
+otherwise the recording is bound to its row and the other rows are
+refused (red, at zero tokens) with guidance naming the column and the
+step. That includes dates without a year and one- or two-character
+values. A blank cell is refused the same way, or, when its step types
+`<column>`, the first filled row records once more and serves the blank
+rows too. Keep a check that lists all rows' values out of the Outline.
 Tests live in the folder named by `features` in `saffron.config.json`
 (`features/` by default).
 
