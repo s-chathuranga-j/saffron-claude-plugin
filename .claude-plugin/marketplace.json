@@ -10,7 +10,7 @@
       "name": "saffron",
       "source": "./plugins/saffron",
       "description": "End-to-end UI tests in plain language, recorded once by AI and replayed at zero tokens: language server, MCP tools and agent skill.",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "category": "testing",
       "keywords": [
         "saffron",

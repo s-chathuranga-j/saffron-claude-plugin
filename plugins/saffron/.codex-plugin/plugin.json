@@ -1,6 +1,6 @@
 {
   "name": "saffron",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Write end-to-end UI tests in plain language with Saffron: an AI agent records each scenario once, every later run replays at zero tokens. Adds the saffron MCP server (search_steps, list_step_sets, project_status) and the Saffron agent skill.",
   "author": {
     "name": "Chathuranga Jayasinghe",

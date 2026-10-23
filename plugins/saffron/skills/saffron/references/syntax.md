@@ -85,9 +85,9 @@ And I enter "{env:ADMIN_PASSWORD}" in the password field
 
 Resolved from the environment (or a git-ignored `.env`; real env wins) at
 replay. Caches, proposals, reports and history contain only the token;
-a missing variable fails fast by name. Honest note: during the *first*
-recording the agent types the real value once: use rotatable staging
-credentials.
+a missing variable fails fast by name. While recording, type the token
+itself (`browser_type text='{env:ADMIN_PASSWORD}'`): Saffron puts the
+value into the browser, and shows it back to you only as the token.
 
 ## Test data: `{data:...}`
 
@@ -186,6 +186,26 @@ Then the order request should have returned 201        # assertion, never healed
 Recorded as URL-pattern + method + status (+ body pattern) matchers;
 waits are satisfied by responses from the triggering step onward, so
 "click and wait" never races. Prefer these over any fixed sleep.
+
+JSON response fields support typed equality and presence checks:
+
+```gherkin
+Then the POST response from "/api/order" should have status 201 and JSON field "status" equal to the string "CREATED"
+And that response's JSON field "id" should be present
+And that response's JSON field "error" should be absent
+```
+
+Record JSON fields with `saffron_assert kind=response json=[...]`, or with
+`saffron_wait_api json=[...]` for a wait. Each check has a JSON Pointer
+`path` (`/order/status`, `/items/0/sku`) and either `equals` as text or
+`exists` as true/false. Equality defaults to string; set `type` to number,
+boolean or null when the step expects that type. For null, use
+`equals="null", type="null"`. A null field is present, not absent.
+Preserve the step's Examples, data, env, unique and date tokens in expected
+values. Paths are kept as recorded and never follow an Examples row. Derive expectations from the scenario, never the observed response.
+All checks in an action apply to the response that satisfies its URL,
+method and status. Check it before the next browser interaction. These
+recordings require format version 5, which older runners refuse.
 
 ## Page furniture
 
