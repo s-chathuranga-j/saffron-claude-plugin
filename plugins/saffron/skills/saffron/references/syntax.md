@@ -187,6 +187,10 @@ Recorded as URL-pattern + method + status (+ body pattern) matchers;
 waits are satisfied by responses from the triggering step onward, so
 "click and wait" never races. Prefer these over any fixed sleep.
 
+These watch the requests the page makes. A step that sends a request
+itself ("When I create a customer through the API") is an API step: see
+[API tests](api.md).
+
 JSON response fields support typed equality and presence checks:
 
 ```gherkin

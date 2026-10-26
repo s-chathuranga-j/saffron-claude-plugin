@@ -70,6 +70,7 @@ your-project/
 | `model` | Model in the provider's own names (unset: the provider's default). A `--provider` run on another provider ignores it |
 | `healModel` | Cheaper model for heal sessions only |
 | `ci` | Where `saffron runs` and `import --run` find CI runs: `{"provider": "github" \| "azure", "organization": ..., "project": ...}`. Unset, an Azure Repos remote means Azure Pipelines (through `az`), anything else GitHub Actions (through `gh`). `organization` and `project` are for a GitHub repository built by Azure Pipelines |
+| `api` | The API under test: `{"baseURL": ..., "contract": "api/openapi.json", "transcript": "on-failure"}`. `baseURL` is where API steps' relative paths go (unset: the run's `baseURL`); `contract` is the pinned OpenAPI 3 document schema checks validate against (`saffron api pin` writes it), and a change to it, or to which file it names, makes the recordings checked against it stale; `transcript` keeps each scenario's requests and responses for the report and `saffron trace`: `"on-failure"` (default), `"on"` or `"off"` (statuses and timings only); `services` names more APIs, each `{"baseURL": ..., "contract": ...}`, which a request names instead of a host (`--api-url name=<url>` points one elsewhere for a run). See [API tests](api.md) |
 
 ## CLI
 
@@ -84,7 +85,8 @@ your-project/
 | `saffron steps [search] [--json] [--snippets]` | The step vocabulary with recorded/divergent/unrecorded badges |
 | `saffron author <prose-file> [--provider p]` | Draft a `.saffron` file from plain-paragraph requirements using the project vocabulary |
 | `saffron login [provider]` | Check that a provider can record and heal here and list what is missing; `saffron login cursor` also runs Cursor's one-time sign-in, `saffron login antigravity` also allows Saffron's tools in agy |
-| `saffron mcp` / `saffron lsp` | MCP tools (`search_steps`, `list_step_sets`, `project_status`) for AI assistants / language server for editors |
+| `saffron mcp` / `saffron lsp` | MCP tools (`search_steps`, `list_step_sets`, `project_status`, `api_contract`) for AI assistants / language server for editors |
+| `saffron api pin <source> [--out file] [--service name]` | Pin the API contract: fetch an OpenAPI 3 document from a Swagger UI page, a document URL or a file, and write it as JSON (default `api/openapi.json`, or `api/<name>.json` with `--service`). Add it to the config as `api.contract`, or as `api.services.<name>.contract` |
 | `saffron init [--examples] [--agents list]` | Install this skill into the project's agent directories, register MCP, add an AGENTS.md block, scaffold config; `--examples` adds the Saucedemo example suite |
 | `saffron report [--merge [paths]] \| --run <id> [--provider p] [--allow-fork] [--max-download MB] [--json \| --panel]` | Open the latest HTML report; `--merge` combines a complete set of shard reports into `latest.json`, `latest.html` and one history line. `--run` views a CI run's results without importing: downloaded once into `.saffron/ci/` (newest 10 runs, 1 GB, fixed), checked like an import, proposals judged importable or not with the reason, nothing filed. No bundle exits 0 with `reasonKind` `running`, `expired` or `none`; over `--max-download` exits 2 with `kind: "too-large"` and `sizeBytes`. `saffron import --run` reuses the download. `--panel` prints the run's results as the one HTML page the editors' CI results panel shows |
 | `saffron dashboard [--stdout] [--no-open]` | The suite's quality from the run history (failing and for how long, flaky, repeatedly healed, never run, slowest, trends, per tag); writes and opens `.saffron/reports/dashboard.html`, `--stdout` prints it |
@@ -100,7 +102,7 @@ one line (`SAFFRON_DEBUG=1` shows the stack).
 
 Recording and healing need the configured provider's login on the machine.
 Claude (default): `ANTHROPIC_API_KEY`, or a Claude Code login. Codex: a
-ChatGPT-plan `npx @openai/codex login` plus `npm i -D @openai/codex-sdk`. Antigravity:
+ChatGPT-plan `npx @openai/codex login` plus `npm i -D "@openai/codex-sdk@>=0.158.0"`. Antigravity:
 Google's `agy` CLI, signed in once, then `npx saffron login antigravity`
 (allows Saffron's tools in agy's settings). Cursor: `npm i -D @cursor/sdk`
 and `npx saffron login cursor`. `npx saffron login` lists what is missing.
@@ -125,6 +127,9 @@ is required for agents; the CLI is the same surface.
 npx playwright install chromium
 npx saffron run --no-agent --strict     # replay committed caches; no AI, no surprises
 ```
+
+A job that runs only `@api` scenarios (`--filter @api`) starts no browser,
+so it can skip `npx playwright install`.
 
 Record new scenarios on developer machines. A CI job that may heal (it
 has the provider's login or key) runs without `--no-agent`, and its heals

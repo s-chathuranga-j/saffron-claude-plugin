@@ -1,6 +1,6 @@
 ---
 name: saffron
-description: Create, translate, or edit Saffron UI test scenarios in .saffron or .feature files, including validating their recordings and replay. Use when asked to author or fix these test files in a Saffron project. Do not activate for ordinary application development, generic Cucumber projects, or requests only to run existing tests, inspect reports, review proposals, or configure Saffron.
+description: Create, translate, or edit Saffron test scenarios in .saffron or .feature files, browser UI tests and HTTP API tests (@api) alike, including validating their recordings and replay. Use when asked to author or fix these test files in a Saffron project. Do not activate for ordinary application development, generic Cucumber projects, or requests only to run existing tests, inspect reports, review proposals, or configure Saffron.
 license: Saffron Free Use License v1.0 (see the saffron-ai package LICENSE)
 metadata:
   author: saffron-ai
@@ -29,6 +29,13 @@ on Playwright's browser engine; Playwright MCP is used only by the agent
 while recording and healing.) When the UI drifts, the agent heals the failing
 step mid-run and files a reviewable proposal.
 
+A scenario tagged `@api` tests an HTTP API instead, with no browser: the
+agent records each request and the checks on its response, against the
+project's pinned OpenAPI contract. The rules and workflow below hold for
+both; [API tests](references/api.md) has what is specific to them. Read
+it before writing or reviewing an `@api` scenario, or a step that calls
+the API from a browser scenario.
+
 Your job when writing tests is to make that economy work. Three rules
 matter more than everything else:
 
@@ -54,7 +61,8 @@ names the old value elsewhere (a `delete-bob` test id, a `#row-bob`
 selector) is not reused for the new one: that step records afresh. `saffron init` registers the
 `saffron` MCP server with Claude Code, Cursor and VS Code; its
 `search_steps` / `list_step_sets` / `project_status` tools give the same
-answers without a shell.
+answers without a shell, and `api_contract` lists the operations of the
+pinned API contract for `@api` scenarios.
 
 **Know the project before touching it:**
 
@@ -106,7 +114,10 @@ means visible.
    flow, but do not establish its current UI behavior. Reuse recent,
    relevant browser evidence instead of exploring the whole application.
    If access or test data is missing, identify the gap and produce a draft
-   with explicit assumptions; do not invent observations.
+   with explicit assumptions; do not invent observations. For an `@api`
+   scenario, read the pinned contract (`api_contract`) instead of the
+   page, and where access allows, send the request once to see a real
+   response; pin a contract first if the project has none.
 3. **Design one behavior per scenario.** When translating Cypress or other
    tests, preserve the intended coverage, reconsider assumptions, and
    split independent changes. Compare the same target immediately before
@@ -236,6 +247,27 @@ it, and never copy one person's prefix onto another's step: a recording
 is reused only within its own session, so the buyer's typed address
 never seeds the seller's step.
 
+## API tests: `@api`
+
+```gherkin
+@api
+Feature: Customers API
+
+  Scenario: Subscribe a new customer to a plan
+    When I create a customer named "cust-{unique:name}" through the API
+    And I put the customer on the "Basic" plan for 3 months
+    Then the customer should be on the "Basic" plan for 3 months
+    And the customer should match the contract
+```
+
+One request intent per `When` step, its values in the step text. Records
+that must be new each run take `{unique:name}`. Refer to an earlier
+result by intent ("the customer"), never by an id you saw: the agent keeps
+the fields later steps need. `Then` steps state a status, a field's value
+or "should match the contract", and name the status of an error case.
+Pin the contract first (`npx saffron api pin <url or file>`), and read
+[API tests](references/api.md) for the recording, review and run details.
+
 ## Repeated step groups → StepSets (`.saffron` files only)
 
 `.saffron` is a superset of `.feature`: rename the file, nothing else
@@ -271,6 +303,7 @@ npx saffron trace "<scenario>"              # inspect a failed or adapted step (
 npx saffron accept <proposal-file>          # accept a reviewed, verified proposal
 npx saffron run features/login.saffron:12 --no-agent  # prove cached replay
 npx saffron status --json                   # confirm affected scenario state
+npx saffron api pin <url or file>           # pin the API contract @api scenarios check against
 ```
 
 Results: **green** = cached pass · **yellow** = pending review · **red** =
@@ -316,6 +349,9 @@ setup, and other configuration needed by the requested test, read
 | Sleep/wait "for 3 seconds" | Wait for a UI signal or an API response |
 | Several independent changes and all-pairs comparisons in one scenario | One behavior and its own baseline per scenario; reuse setup with StepSets in `.saffron` |
 | Edit cache JSON to fix a test | Edit the scenario text and re-run, or `saffron run --rerecord` if the recording itself is wrong |
+| Write an id you saw in a response into a later API step | Refer to it by intent ("the customer I created"); the recording keeps it as `{captured:name}` |
+| Create a fixed record (`"cust-1"`) in an API step | `{unique:name}`: every run, and the proof replay, creates its own |
+| Check an API response's status in a `When` | Name the status in a `Then` ("should answer 404") |
 
 ## References
 
@@ -323,4 +359,6 @@ setup, and other configuration needed by the requested test, read
   outlines, secrets, dates, network waits, page furniture, StepSets.
 - [Configuration & CI](references/config.md): `saffron.config.json`,
   flags, `--strict`, cross-browser and browser matrix, devices, workers
-  and agent workers, heal model, secrets setup.
+  and agent workers, heal model, secrets setup, the API settings.
+- [API tests](references/api.md): `@api` scenarios, the pinned contract,
+  writing and reviewing request steps, API calls from a browser scenario.
