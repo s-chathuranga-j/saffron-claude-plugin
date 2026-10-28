@@ -8,10 +8,12 @@ One plugin gives Claude Code everything it needs to write and maintain
   name missing the keyword, near-duplicate wordings), and gets completion
   with recorded / divergent / unrecorded badges, StepSet and `{env:VAR}`
   go-to-definition, and hover.
-- **MCP server** with `search_steps`, `list_step_sets`, `project_status`
-  and `api_contract`, so Claude reuses your recorded wordings, knows what
-  is cached, pending review and tagged, and writes API steps for the
-  operations your pinned OpenAPI contract has.
+- **MCP server** with `search_steps`, `list_step_sets`, `project_status`,
+  `run_plan`, `api_contract` and `verify`, so Claude reuses your recorded
+  wordings, knows what is cached, pending review and tagged, sees what a
+  run would record before it spends anything, writes API steps for the
+  operations your pinned OpenAPI contract has, and verifies its own
+  changes at zero AI against your reviewed coverage map.
 - **The Saffron agent skill**: reuse the vocabulary, keep `Then` steps
   sacred, secrets as `{env:VAR}` and shared values as `{data:...}`,
   StepSets, several people in one scenario (`As "buyer"`), API tests

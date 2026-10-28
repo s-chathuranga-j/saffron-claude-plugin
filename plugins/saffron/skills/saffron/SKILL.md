@@ -3,11 +3,14 @@ name: saffron
 description: Create, translate, or edit Saffron test scenarios in .saffron or .feature files, browser UI tests and HTTP API tests (@api) alike, including validating their recordings and replay. Use when asked to author or fix these test files in a Saffron project. Do not activate for ordinary application development, generic Cucumber projects, or requests only to run existing tests, inspect reports, review proposals, or configure Saffron.
 license: Saffron Free Use License v1.0 (see the saffron-ai package LICENSE)
 metadata:
+  saffron-ai: "1.2.2"
   author: saffron-ai
   homepage: https://saffron-ai.io
 ---
 
 # Saffron
+
+This skill describes saffron-ai 1.2.2 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
 
 Apply this workflow only when asked to create, translate, or edit Saffron
 scenarios in `.saffron` or `.feature` files. A Saffron mention or an
@@ -61,14 +64,18 @@ names the old value elsewhere (a `delete-bob` test id, a `#row-bob`
 selector) is not reused for the new one: that step records afresh. `saffron init` registers the
 `saffron` MCP server with Claude Code, Cursor and VS Code; its
 `search_steps` / `list_step_sets` / `project_status` tools give the same
-answers without a shell, and `api_contract` lists the operations of the
-pinned API contract for `@api` scenarios.
+answers without a shell, `run_plan` says what a run would replay and
+record (and which new steps to record and accept first) before it costs
+anything, `api_contract` lists the operations of the pinned API
+contract for `@api` scenarios, and `verify` replays what you changed at
+zero AI and reports any check you weakened against the reviewed baseline.
 
 **Know the project before touching it:**
 
 ```bash
 npx saffron status                # files and scenarios (● cached, ◐ proposal pending, ○ unrecorded), tags, proposals, last run, health
 npx saffron status --json         # the same as data (what the IDE panels and the project_status MCP tool read)
+npx saffron run --plan            # what a run would replay, record or refuse, and the agent sessions it needs, without running
 ```
 
 Use it to pick tags that already exist, to see which scenarios are
