@@ -118,10 +118,12 @@ npx saffron trace "A missing customer answers 404"   # the requests and response
 - A write (`POST`, `PUT`, `PATCH`, `DELETE`) is never retried on replay:
   a timeout fails the step instead of creating a second record. Reads are
   retried as usual.
-- A recording with a schema check goes stale when the pinned contract
-  changes, or when `api.contract` names another file: red without an
-  agent, recorded again with one. It never passes over a contract it was
-  not checked against.
+- A recording with a schema check is checked again when the pinned
+  contract changes, or when `api.contract` names another file: a zero-AI
+  replay of the same recording, filed for review (yellow) when it passes,
+  red when the API breaks the new contract, and no agent session either way.
+  It never passes green over a contract it was not checked against.
+  `saffron run --rerecord` records it again.
 - `api.transcript` sets what the request transcript keeps: `"on-failure"`
   (default), `"on"` (green scenarios too) or `"off"` (statuses and timings
   only). The report lists each scenario's requests per step, and

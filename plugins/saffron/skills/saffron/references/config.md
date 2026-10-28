@@ -69,6 +69,7 @@ your-project/
 | `provider` | Whose agent records and heals, on its login on this machine: `claude` (default), `codex` (ChatGPT plan), `antigravity` (Google AI Pro/Ultra via the `agy` CLI, experimental), `cursor`. Also `--provider` |
 | `model` | Model in the provider's own names (unset: the provider's default). A `--provider` run on another provider ignores it |
 | `healModel` | Cheaper model for heal sessions only |
+| `antigravityApiKey` | `true`: Antigravity signs in with `GEMINI_API_KEY` even beside an agy login (default: a login wins) |
 | `ci` | Where `saffron runs` and `import --run` find CI runs: `{"provider": "github" \| "azure", "organization": ..., "project": ...}`. Unset, an Azure Repos remote means Azure Pipelines (through `az`), anything else GitHub Actions (through `gh`). `organization` and `project` are for a GitHub repository built by Azure Pipelines |
 | `api` | The API under test: `{"baseURL": ..., "contract": "api/openapi.json", "transcript": "on-failure"}`. `baseURL` is where API steps' relative paths go (unset: the run's `baseURL`); `contract` is the pinned OpenAPI 3 document schema checks validate against (`saffron api pin` writes it), and a change to it, or to which file it names, makes the recordings checked against it stale; `transcript` keeps each scenario's requests and responses for the report and `saffron trace`: `"on-failure"` (default), `"on"` or `"off"` (statuses and timings only); `services` names more APIs, each `{"baseURL": ..., "contract": ...}`, which a request names instead of a host (`--api-url name=<url>` points one elsewhere for a run). See [API tests](api.md) |
 
@@ -100,11 +101,11 @@ one line (`SAFFRON_DEBUG=1` shows the stack).
 
 ## AI access
 
-Recording and healing need the configured provider's login on the machine.
-Claude (default): `ANTHROPIC_API_KEY`, or a Claude Code login. Codex: a
-ChatGPT-plan `npx @openai/codex login` plus `npm i -D "@openai/codex-sdk@>=0.158.0"`. Antigravity:
-Google's `agy` CLI, signed in once, then `npx saffron login antigravity`
-(allows Saffron's tools in agy's settings). Cursor: `npm i -D @cursor/sdk`
+Recording and healing need the configured provider's login on the machine,
+or its API key. Claude (default): `ANTHROPIC_API_KEY`, or a Claude Code login. Codex: a
+ChatGPT-plan `npx @openai/codex login`, or `CODEX_API_KEY` (or `OPENAI_API_KEY`), plus `npm i -D "@openai/codex-sdk@>=0.158.0"`. Antigravity:
+Google's `agy` CLI, signed in once or with `GEMINI_API_KEY`, then `npx saffron login antigravity`
+(allows Saffron's tools in agy's settings). A Codex or Antigravity login wins over a key. Cursor: `npm i -D @cursor/sdk`
 and `npx saffron login cursor`. `npx saffron login` lists what is missing.
 Replay-only runs (`--no-agent`) need none: that is the normal CI mode once
 caches are committed. With no `model` configured the provider's default
