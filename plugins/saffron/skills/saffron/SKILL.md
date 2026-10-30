@@ -3,14 +3,14 @@ name: saffron
 description: Create, translate, or edit Saffron test scenarios in .saffron or .feature files, browser UI tests and HTTP API tests (@api) alike, including validating their recordings and replay. Use when asked to author or fix these test files in a Saffron project. Do not activate for ordinary application development, generic Cucumber projects, or requests only to run existing tests, inspect reports, review proposals, or configure Saffron.
 license: Saffron Free Use License v1.0 (see the saffron-ai package LICENSE)
 metadata:
-  saffron-ai: "1.2.2"
+  saffron-ai: "1.3.0"
   author: saffron-ai
   homepage: https://saffron-ai.io
 ---
 
 # Saffron
 
-This skill describes saffron-ai 1.2.2 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
+This skill describes saffron-ai 1.3.0 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
 
 Apply this workflow only when asked to create, translate, or edit Saffron
 scenarios in `.saffron` or `.feature` files. A Saffron mention or an
@@ -194,6 +194,24 @@ means visible.
   alone does not prove which way the flow went. Name the exact control a
   variant uses (`the "Guarantee your booking by card" button`, not "pay");
   two similar buttons are not interchangeable.
+- **Put a step's values in a data table when there are more than two.**
+  A step reads as one sentence of intent; the values it enters or sends go
+  in a 2-column table on the lines below it (a key and its value), not in
+  one long line of quoted parameters. This holds for an API request's
+  headers, query parameters and body fields as much as for a form:
+
+  ```gherkin
+  When I validate the no-show reservation with these request details
+    | reservation    | {data:no-show.chargeable} |
+    | API key        | {env:NOSHOW_API_KEY}      |
+    | correlation ID | {unique:correlation}      |
+  ```
+
+  Each cell records as its `<table:key>`, so editing a value replays at
+  zero AI; renaming or adding a key re-records the step. Use a header
+  table for a list of records, and a `"""` doc string for free text or a
+  whole JSON body. Keep one or two values inline when they read as part of
+  the sentence (`When I read customer "cust-42" through the API`).
 - **Name the section a step acts in** when the page repeats labels (a
   guest form and a booker form): `I replace "E-mail" in "Guest information"
   with "..."`. The recording is then scoped to that section, so it acts on
@@ -267,7 +285,10 @@ Feature: Customers API
     And the customer should match the contract
 ```
 
-One request intent per `When` step, its values in the step text. Records
+One request intent per `When` step. A value or two can sit in the step
+text; more (an API key, a correlation id, query parameters, body fields)
+go in a 2-column data table under the step, one row each, never one long
+line. Records
 that must be new each run take `{unique:name}`. Refer to an earlier
 result by intent ("the customer"), never by an id you saw: the agent keeps
 the fields later steps need. `Then` steps state a status, a field's value
@@ -359,6 +380,7 @@ setup, and other configuration needed by the requested test, read
 | Write an id you saw in a response into a later API step | Refer to it by intent ("the customer I created"); the recording keeps it as `{captured:name}` |
 | Create a fixed record (`"cust-1"`) in an API step | `{unique:name}`: every run, and the proof replay, creates its own |
 | Check an API response's status in a `When` | Name the status in a `Then` ("should answer 404") |
+| One long step line carrying an API key, ids and several quoted parameters | A short step and a 2-column data table under it, one value per row |
 
 ## References
 

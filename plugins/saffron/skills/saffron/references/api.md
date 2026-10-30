@@ -56,6 +56,21 @@ Feature: Customers API
   the step text: quoted strings, numbers, `<column>`s, `{data:...}`. The
   recording keeps them as the step writes them, and a number stays a
   number in the request body on every Examples row.
+- **More than two values go in a data table** under the step, one row
+  each: headers (an API key, a correlation id), query parameters, body
+  fields. The step stays one readable sentence, and each cell records as
+  its `<table:key>` wherever the request sends it (its path, a header,
+  the body, a form field), so editing a cell replays at zero AI:
+
+  ```gherkin
+  When I validate the no-show reservation with these request details
+    | reservation    | {data:no-show.chargeable} |
+    | API key        | {env:NOSHOW_API_KEY}      |
+    | correlation ID | {unique:correlation}      |
+  Then the response status should be 200
+  ```
+
+  A whole JSON body the step sends as written goes in a `"""` doc string.
 - **Records that must be new each run** take `{unique:name}`. A proof
   replay is a second execution, and every later run is another: each
   creates its own customer instead of colliding with the last one. Clean
