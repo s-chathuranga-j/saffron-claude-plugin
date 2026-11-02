@@ -18,6 +18,11 @@ But I should not see an error banner
 trailing block of assertions is always strict; under the opt-in
 `adaptable-mid` policy only mid-scenario checkpoints may be adapted.
 
+A check on the page's address reads what the URL contains (`Then the URL
+contains "/orders"`). There is no check that a URL does not contain
+something, or is exactly something: name a part the URL must contain, or
+check what the page shows.
+
 ## Scenario Outlines
 
 One cache serves every row: `<param>` placeholders stay in the cache and

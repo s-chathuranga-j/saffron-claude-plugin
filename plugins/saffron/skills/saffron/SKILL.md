@@ -3,14 +3,14 @@ name: saffron
 description: Create, translate, or edit Saffron test scenarios in .saffron or .feature files, browser UI tests and HTTP API tests (@api) alike, including validating their recordings and replay. Use when asked to author or fix these test files in a Saffron project. Do not activate for ordinary application development, generic Cucumber projects, or requests only to run existing tests, inspect reports, review proposals, or configure Saffron.
 license: Saffron Free Use License v1.0 (see the saffron-ai package LICENSE)
 metadata:
-  saffron-ai: "1.3.0"
+  saffron-ai: "1.3.1"
   author: saffron-ai
   homepage: https://saffron-ai.io
 ---
 
 # Saffron
 
-This skill describes saffron-ai 1.3.0 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
+This skill describes saffron-ai 1.3.1 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
 
 Apply this workflow only when asked to create, translate, or edit Saffron
 scenarios in `.saffron` or `.feature` files. A Saffron mention or an
@@ -365,6 +365,17 @@ fixture, or unsupported-operation blocker instead of repeatedly retrying
 or weakening assertions. For CI artifacts, browser matrices, provider
 setup, and other configuration needed by the requested test, read
 [Configuration & CI](references/config.md).
+
+## When Saffron cannot express a value: a small supporting script
+
+Use Saffron itself first: `{date...}` tokens (ranges and locales included), captures and comparisons, `{data:...}` and `{unique:...}`, the checks in the syntax reference, and `setup`/`teardown`. A recording that freezes a value or checks a pattern any value would pass is a recording to reword or re-record, not a missing capability. Reach for a script only when the runner cannot express a requirement at replay, and ask the user first when it would add a dependency, a hook, or a file outside the project's existing scripts folder.
+
+- Keep it small: one file in the project's existing scripts folder, in its runtime and module style, using the standard library or dependencies already installed. Clicks and checks stay in the scenario; the script only prepares data.
+- Expected values come from the test's inputs or an independent source (a contract, a fixture), never from the output being checked. Generate volatile values at run time, and state locale, time zone, format and day-boundary assumptions in the script.
+- Run it as a `setup` command in `saffron.config.json`, keeping the hooks already there. It writes a git-ignored file under `data/`, which scenarios read through named `{data:...}` tokens: Saffron reads data after setup, so every replay sees fresh values. Commit the script and its configuration, never what it generates, and never write secrets into it or its output. On failure it exits non-zero with a message: setup failing stops the run before any scenario. `--no-hooks` skips it: scenarios then read its last output, or stop naming the missing file; say so.
+- Never weaken a check to fit, and never hand-edit caches or proposals.
+- Check it in proportion: its logic at the boundaries it handles (month end, year end, the time zone), the recording's checks and `{data:...}` tokens reviewed, only verified proposals accepted, and the scenario passing with `--no-agent`.
+- Report which files you wrote, which the script generates and which recordings Saffron made, why the script is needed, and which Saffron capability could replace it.
 
 ## Anti-patterns that cost money or hide bugs
 
