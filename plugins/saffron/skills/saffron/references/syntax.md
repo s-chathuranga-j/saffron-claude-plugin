@@ -18,10 +18,14 @@ But I should not see an error banner
 trailing block of assertions is always strict; under the opt-in
 `adaptable-mid` policy only mid-scenario checkpoints may be adapted.
 
-A check on the page's address reads what the URL contains (`Then the URL
-contains "/orders"`). There is no check that a URL does not contain
-something, or is exactly something: name a part the URL must contain, or
-check what the page shows.
+A check on the page's address is recorded the way the step says it: that
+the URL contains a value (`Then the URL contains "/orders"`, the default),
+that it no longer holds one (`Then the URL no longer holds the login
+token`), or that its path is exactly one (`Then I am on the /account path
+exactly`, its query and fragment aside). Write "no longer" or "exactly"
+only when you mean it: the recorder refuses a check the step's words do
+not name. A containment check reads its value as a whole part of the URL
+and outside the query, unless the value names one (`?`, `=`, `&`).
 
 ## Scenario Outlines
 
