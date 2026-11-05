@@ -95,6 +95,37 @@ Feature: Customers API
   sends the value and the recording keeps the token.
 - **Outlines** work as for browser scenarios: write `<column>` in every
   step whose request or check depends on the row.
+- **Several requests at once, each with its own values** (an idempotency
+  test, two registrations racing) are one step with a table: a header
+  row, then a row per request, the first column naming it. Saffron sends
+  the request once per row, every row before any answers, and keeps each
+  response with its row whatever order they arrive in. Values all rows
+  share can come from a Background step's table, which sends nothing:
+
+  ```gherkin
+  Background:
+    Given no-show registrations use these shared request details:
+      | reservation     | {data:no-show.chargeable} |
+      | API key         | {env:NOSHOW_API_KEY}      |
+      | idempotency key | {unique:registration}     |
+
+  Scenario: Correlate every response to its concurrent request
+    When I send these no-show registrations concurrently as "registrations":
+      | request   | correlation ID     |
+      | original  | {unique:original}  |
+      | duplicate | {unique:duplicate} |
+    Then every response in "registrations" should have status 200 or 202
+    And every response should echo its own request's correlation ID
+    And every 202 response should have a numeric "Retry-After" header
+    And at least one response should have status 200
+    And all 200 responses should have the same "/paymentReference"
+  ```
+
+  Each `Then` says its scope: every response, those of one status
+  ("every 200 response"), a named one ("the duplicate"), or at least
+  some. A filtered check holds when no response has that status, so pair
+  "every 200 response ..." with "at least one response should have
+  status 200". "The response" after a group names none of them, and fails.
 
 ## What gets recorded, and what to check in `saffron diff`
 
@@ -104,6 +135,8 @@ Feature: Customers API
 | `expectStatus` | the status of the latest response in that step's session, exact (`404`) or a class (`2xx`) |
 | `expectJson` | field checks by JSON Pointer, typed (`/months` equals `3` as a number) or present/absent; an entry of a list with `item` (`{"path": "/messages", "item": [{"path": "/name", "equals": "ann"}]}`), wherever it stands |
 | `expectSchema` | the latest response against the pinned contract: the operation's response schema, or a named component schema |
+| `request` with `group` | sent once per row of its step's table; `<row:column>` is a row's own cell, the first column names it |
+| `expectGroup` | the group's responses: every one, those answering `status`, or the `members` named; each holds `statuses`, `json`, `header` or the contract with its own row's values; `same` a field they all share, non-empty; `atLeast` how many must hold it |
 
 Before accepting a proposal, check that:
 
@@ -116,7 +149,10 @@ Before accepting a proposal, check that:
   and "should match the contract" became an `expectSchema`;
 - an error case expects the status the step names;
 - an entry of a list is an `item` check, not a position (`/0/name`),
-  unless the step names the position ("the first order").
+  unless the step names the position ("the first order");
+- a group's request writes each row's own value as `<row:column>`, and a
+  `Then` about every response is an `expectGroup` with no `members` or
+  `atLeast` it does not state, never a check of one response.
 
 The agent verifies each check against the response before it records it,
 so a recorded check held at recording time; review whether it is the
