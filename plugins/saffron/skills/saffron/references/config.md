@@ -64,7 +64,7 @@ your-project/
 | `device` / `viewport` | A Playwright device profile (`"iPhone 15"`) and/or a `"WIDTHxHEIGHT"` size for every scenario; a desktop recording replays under it or fails at the step that differs |
 | `timezone` | IANA zone (`"Europe/Berlin"`) the browser runs in and `{date...}` tokens count days in (default: the machine's) |
 | `dateLocale` | Locale of month and weekday names in `{date...}` tokens that name none (default `en-US`) |
-| `workers` | Parallel replay workers |
+| `workers` | Parallel replay workers; scenarios tagged `@serial` or `@serial:<name>` still run one at a time per name |
 | `agentWorkers` | Agent sessions (record, heal) that may run at once, each in its own browser (default 1; each is a paid session) |
 | `shardBy` | How `--shard` splits the suite: `"scenario"` (default) or `"file"` (each feature file on one machine) |
 | `provider` | Whose agent records and heals, on its login on this machine: `claude` (default), `codex` (ChatGPT plan), `antigravity` (Google AI Pro/Ultra via the `agy` CLI, experimental), `cursor`. Also `--provider` |

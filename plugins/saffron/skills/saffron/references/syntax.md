@@ -322,6 +322,22 @@ Scenario: ...
 tags means `or`; once `and`, `not` or a parenthesis appears, join every
 tag with `and` or `or`. The `@` may be left out.
 
+Tags that change how a scenario runs:
+
+| Tag | Effect |
+|-----|--------|
+| `@api` | An HTTP API test, with no browser ([API tests](api.md)) |
+| `@side-effects` | It changes the app's data; `run_plan` counts how often it runs |
+| `@serial` | Never runs at the same time as another `@serial` scenario |
+| `@serial:<name>` | Never runs at the same time as another scenario with that name (`@serial:rooms`); any case, and commas give several (`@serial:rooms,users`) |
+
+`@serial` holds across workers, the record and heal phases, a heal's proof
+replays of an Outline's other rows, and `--shard` (one name's scenarios go to
+one machine). `saffron eject` writes `workers: 1` into the Playwright config it
+creates for such a suite. Tag the scenarios that share data the app keeps
+(one account, one booking slot) instead of running the whole suite with
+`--workers 1`.
+
 ## A complete file
 
 How the pieces fit in one project. The shared sign-in lives in a

@@ -3,14 +3,14 @@ name: saffron
 description: Create, translate, or edit Saffron test scenarios in .saffron or .feature files, browser UI tests and HTTP API tests (@api) alike, including validating their recordings and replay. Use when asked to author or fix these test files in a Saffron project. Do not activate for ordinary application development, generic Cucumber projects, or requests only to run existing tests, inspect reports, review proposals, or configure Saffron.
 license: Saffron Free Use License v1.0 (see the saffron-ai package LICENSE)
 metadata:
-  saffron-ai: "1.3.4"
+  saffron-ai: "1.3.5"
   author: saffron-ai
   homepage: https://saffron-ai.io
 ---
 
 # Saffron
 
-This skill describes saffron-ai 1.3.4 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
+This skill describes saffron-ai 1.3.5 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
 
 Apply this workflow only when asked to create, translate, or edit Saffron
 scenarios in `.saffron` or `.feature` files. A Saffron mention or an
@@ -399,6 +399,7 @@ Use Saffron itself first: `{date...}` tokens (ranges and locales included), capt
   outlines, secrets, dates, network waits, page furniture, StepSets.
 - [Configuration & CI](references/config.md): `saffron.config.json`,
   flags, `--strict`, cross-browser and browser matrix, devices, workers
-  and agent workers, heal model, secrets setup, the API settings.
+  and agent workers (`@serial` keeps scenarios that share data apart),
+  heal model, secrets setup, the API settings.
 - [API tests](references/api.md): `@api` scenarios, the pinned contract,
   writing and reviewing request steps, API calls from a browser scenario.
