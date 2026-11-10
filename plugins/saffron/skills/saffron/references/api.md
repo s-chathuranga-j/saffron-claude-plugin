@@ -2,7 +2,9 @@
 
 A scenario tagged `@api` tests an HTTP API with no browser. The agent
 records each request once, every later run replays it at zero tokens, and
-`Then` steps are never healed, as for browser scenarios. A browser
+`Then` steps are never healed, as for browser scenarios (the one
+exception is a database check's query after a schema change, see
+[Database steps](database.md)). A browser
 scenario can also call the API in a step; see the end of this page.
 
 ## Before writing
@@ -90,6 +92,11 @@ Feature: Customers API
   2xx is recorded only when its step names that status; otherwise the
   step fails, so a failure seen while recording never replays as the
   expected result.
+- **A `Then` says what it checks.** A `Then` whose only check would be
+  the 2xx class, or the status its request already required, is refused
+  (it could never fail): name a field or "should match the contract". A
+  time limit ("within 2 seconds") or a poll's limit is recorded exactly as
+  the step states it in figures.
 - **Secrets stay `{env:VAR}` tokens**, typically in a step that names the
   credential: `Given I use the API token "{env:API_TOKEN}"`. The request
   sends the value and the recording keeps the token.

@@ -48,6 +48,13 @@ Scenario Outline: Failed login shows an error
     | standard | wrong    | Wrong username or password |
 ```
 
+A `<name>` within an edit or two of a column (a misspelt `<rol>` beside
+`| role |`) is a parse error naming the columns; other tags, such as
+`"<script>"` or `List<String>`, stay literal. An Outline with no Examples
+whose steps use a placeholder is refused (add Examples or use
+`Scenario:`), and so is an Examples block with no table
+(`Examples: data:roles`; the file form is `Examples: {data:roles}`).
+
 ## Data tables
 
 **2-column = key/value.** Values record as `<table:key>` references:
@@ -171,7 +178,8 @@ is 9 digits.
   `{env:...}`) is entered as written on every run. In an Outline, each
   Examples row's `{date+N}` cell, in any format, gives that row its own day.
 - Text assertions read only what the page shows: hidden text, hidden
-  options and hidden parts of an element never satisfy them.
+  options, hidden parts of an element and anything inside a frame the
+  page hides never satisfy them.
 - Capture and compare displayed values instead of literals:
 
 ```gherkin
@@ -251,6 +259,10 @@ When I open a new tab at the admin page
 Recorded as `switchTab` / `closeTab` / `newTab` with 0-based tab indexes
 in creation order; replay repeats them in order. Say which tab in the
 step ("the first tab", "the preview tab") so the recording is unambiguous.
+When the steps after the click keep working on the page clicked, the
+recording switches back to it, so replay runs them there, not on the new
+tab. A tab no step's action opened (a page timer, a popup long after its
+click) is not followed.
 
 ## Several people: `As "name"` (browser sessions)
 
@@ -409,4 +421,6 @@ What each part buys:
   the recording is bound to its row, see "A recording bound to its row"
   in HOW-TO-USE).
 - **Each scenario ends in its `Then` block**, the strict verdict that is
-  never healed.
+  never healed. The one exception: a database check whose query fails
+  after a schema change may have its query repaired; its binds, expected
+  rows and row count never change (see [Database steps](database.md)).

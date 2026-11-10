@@ -3,14 +3,14 @@ name: saffron
 description: Create, translate, or edit Saffron test scenarios in .saffron or .feature files, browser UI tests and HTTP API tests (@api) alike, including validating their recordings and replay. Use when asked to author or fix these test files in a Saffron project. Do not activate for ordinary application development, generic Cucumber projects, or requests only to run existing tests, inspect reports, review proposals, or configure Saffron.
 license: Saffron Free Use License v1.0 (see the saffron-ai package LICENSE)
 metadata:
-  saffron-ai: "1.3.5"
+  saffron-ai: "1.4.0"
   author: saffron-ai
   homepage: https://saffron-ai.io
 ---
 
 # Saffron
 
-This skill describes saffron-ai 1.3.5 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
+This skill describes saffron-ai 1.4.0 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
 
 Apply this workflow only when asked to create, translate, or edit Saffron
 scenarios in `.saffron` or `.feature` files. A Saffron mention or an
@@ -96,14 +96,17 @@ end up with something recorded against it. Put
 the final assertions **last**; the trailing block of `Then` steps is
 strict under every policy. Use `Given`/`When` for actions. A text check
 passes only on text the page shows: hidden elements, hidden parts of an
-element and hidden dropdown options never count, so "should be shown"
-means visible.
+element, hidden dropdown options and frames the page hides never count,
+so "should be shown" means visible. One narrow exception to "never healed": a database check
+whose query fails after a schema change may have its query (table,
+columns, joins) repaired by the agent; its binds, expected rows and row
+count never change.
 
 ## 3. Never bake volatile or secret values into files
 
 - Secrets: `{env:VAR}`, as in `When I enter "{env:ADMIN_PASSWORD}" in the password field`.
 - Shared test data (accounts, names, enum values): put it in `data/*.json` and write `{data:users.admin.email}` (file, then dotted path; one value, not a list). The recording stores the token, so editing the file changes the next replay at zero tokens. Never for secrets: data files are committed. To check a whole list (an enum), point a Then step at it: `Then the status filter should list every {data:enums.OrderStatus}`; replay iterates the file's list, so adding a value needs no re-record. `Examples: {data:roles}` reads outline rows from `data/roles.csv` or a JSON list (`.saffron` only). A value that must be new on every run (an email for a sign-up) is `{unique:name}`: fresh per run, the same within it.
-- State the application must be in before the suite (seeded users, a reset database): do not script it through the UI in every scenario. The project's `saffron.config.json` takes `"setup"` and `"teardown"` shell commands, run once around `saffron run` (teardown always runs). Propose a seed script there; keep scenario steps for the behaviour under test.
+- State the application must be in before the suite (seeded users, a reset database): do not script it through the UI in every scenario. The project's `saffron.config.json` takes `"setup"` and `"teardown"` shell commands, run once around `saffron run` (teardown always runs). Propose a seed script there; keep scenario steps for the behaviour under test. Data one scenario needs can be seeded inside it instead with a database seed step (`Given a customer "ann-{unique:c}@example.test" on the "basic" tier`), when the project configures `db` with writes on; see Database steps below.
 - Dates: write intent when the day should move ("1 day from today" records as `{date+1}`); a date you write out (`I enter 2026-10-10`, in a table, a data file or `{env:...}`) is entered as written on every run. An Examples cell such as `{date+2:DD.MM.YYYY}` gives each row its own day. A date the app shows in words or as a range is a token too (`{date+7:D. MMM:de-DE}`, `{date+7 - +9:MMM D, YYYY}`), never a setup script.
 - Dynamic display values: capture and compare, e.g. `I record the total as "first"` … `"first" should differ from the displayed total`.
 
@@ -296,6 +299,28 @@ or "should match the contract", and name the status of an error case.
 Pin the contract first (`npx saffron api pin <url or file>`), and read
 [API tests](references/api.md) for the recording, review and run details.
 
+## Database steps (beta)
+
+```gherkin
+Scenario: An upgrade is saved
+  Given a customer "ann-{unique:c}@example.test" on the "basic" tier
+  When I upgrade "ann-{unique:c}@example.test" to "gold" on the account page
+  Then the customer "ann-{unique:c}@example.test" should be on the "gold" tier in the database
+  And no refund should exist in the database for "ann-{unique:c}@example.test"
+```
+
+With `db` in `saffron.config.json` (PostgreSQL, MySQL or SQL Server), a `Then` can check
+what the database holds and a `Given` or `When` can seed data, in browser and `@api`
+scenarios alike. Name the database in a check ("in the database") and name
+the record by a value the scenario wrote: the step's text, an Examples
+column, a `{unique:...}` value, or a value an earlier step kept. A check
+bound to nothing ("a customer exists") is refused while recording. A
+"not in the database" check waits out `db.timeout` (3 s by default) before
+it passes. Seeding needs `"writes": true` and the database's host or name
+in `allow`; seed what the app gives no way to set, with `{unique:...}`
+values, and the rows are undone when the scenario ends. Read
+[Database steps](references/database.md) for the details.
+
 ## Repeated step groups → StepSets (`.saffron` files only)
 
 `.saffron` is a superset of `.feature`: rename the file, nothing else
@@ -353,7 +378,10 @@ refused (red, at zero tokens) with guidance naming the column and the
 step. That includes dates without a year and one- or two-character
 values. A blank cell is refused the same way, or, when its step types
 `<column>`, the first filled row records once more and serves the blank
-rows too. Keep a check that lists all rows' values out of the Outline.
+rows too. A value the page sets in its own way (a phone or IBAN in
+blocks, an id zero-padded inside a longer one like `INV-000104`) binds the
+recording to its row the same way: give the cell the value as the page
+shows it. Keep a check that lists all rows' values out of the Outline.
 Tests live in the folder named by `features` in `saffron.config.json`
 (`features/` by default).
 
@@ -392,6 +420,7 @@ Use Saffron itself first: `{date...}` tokens (ranges and locales included), capt
 | Create a fixed record (`"cust-1"`) in an API step | `{unique:name}`: every run, and the proof replay, creates its own |
 | Check an API response's status in a `When` | Name the status in a `Then` ("should answer 404") |
 | One long step line carrying an API key, ids and several quoted parameters | A short step and a 2-column data table under it, one value per row |
+| A database check bound to nothing ("Then a customer exists in the database") | Name the record the scenario made: `Then the customer "ann-{unique:c}@example.test" should be saved in the database` |
 
 ## References
 
@@ -403,3 +432,6 @@ Use Saffron itself first: `{date...}` tokens (ranges and locales included), capt
   heal model, secrets setup, the API settings.
 - [API tests](references/api.md): `@api` scenarios, the pinned contract,
   writing and reviewing request steps, API calls from a browser scenario.
+- [Database steps](references/database.md): checks and seeds against the
+  configured database, what is recorded and refused, cleanup, and the one
+  Then whose query may be repaired.
