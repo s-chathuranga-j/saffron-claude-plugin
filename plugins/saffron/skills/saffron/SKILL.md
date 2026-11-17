@@ -3,14 +3,14 @@ name: saffron
 description: Create, translate, or edit Saffron test scenarios in .saffron or .feature files, browser UI tests and HTTP API tests (@api) alike, including validating their recordings and replay. Use when asked to author or fix these test files in a Saffron project. Do not activate for ordinary application development, generic Cucumber projects, or requests only to run existing tests, inspect reports, review proposals, or configure Saffron.
 license: Saffron Free Use License v1.0 (see the saffron-ai package LICENSE)
 metadata:
-  saffron-ai: "1.4.0"
+  saffron-ai: "1.4.1"
   author: saffron-ai
   homepage: https://saffron-ai.io
 ---
 
 # Saffron
 
-This skill describes saffron-ai 1.4.0 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
+This skill describes saffron-ai 1.4.1 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
 
 Apply this workflow only when asked to create, translate, or edit Saffron
 scenarios in `.saffron` or `.feature` files. A Saffron mention or an
@@ -52,7 +52,7 @@ replays for free.
 **Before writing any step, look at what the project already knows:**
 
 ```bash
-npx saffron steps                 # every step: ● recorded, ● divergent, ○ unrecorded
+npx saffron steps                 # every step: ● recorded, ◐ divergent, ○ unrecorded
 npx saffron steps "login"         # search
 npx saffron steps --json          # machine-readable
 ```
@@ -188,8 +188,10 @@ count never change.
   `I record the basket total as "before"`, `I record the breakfast price as
   "breakfast"`, then `Then the basket total should be "before" plus
   "breakfast"`. Replay reads the one number each element shows, in either
-  decimal style, and compares to the cent. Minus and "times 2" work too;
-  percentages, rounding rules and taxes do not.
+  decimal style, and compares to the cent, or to the decimals the element
+  shows when it shows more: a rate shown as `0.1200` is not `0.1204`.
+  Minus and "times 2" work too; percentages, rounding rules and taxes do
+  not.
 - **Check the route, not only the destination.** When the requirement is
   a path (a 3DS challenge, a redirect, a confirmation dialog), add a
   mid-scenario `Then` for each checkpoint, such as `Then I should see the
@@ -211,7 +213,9 @@ count never change.
   ```
 
   Each cell records as its `<table:key>`, so editing a value replays at
-  zero AI; renaming or adding a key re-records the step. Use a header
+  zero AI, unless the old value also stands inside a word the recording
+  holds (`Pro` in "Products"), which records the step once more; renaming
+  or adding a key re-records the step. Use a header
   table for a list of records, and a `"""` doc string for free text or a
   whole JSON body. Keep one or two values inline when they read as part of
   the sentence (`When I read customer "cust-42" through the API`).
@@ -260,9 +264,11 @@ expected behavior in its input. Its output must still go through steps
 
 ```gherkin
 Given As "seller" I am on the orders page
-When As "buyer" I order the blue lamp        # the buyer's own browser
+# the buyer's own browser
+When As "buyer" I order the blue lamp
 Then As "seller" I see an order for the blue lamp
-And the order is marked new                  # still the seller
+# still the seller
+And the order is marked new
 ```
 
 Each name is its own browser session (cookies, login, tabs). It carries
@@ -309,7 +315,7 @@ Scenario: An upgrade is saved
   And no refund should exist in the database for "ann-{unique:c}@example.test"
 ```
 
-With `db` in `saffron.config.json` (PostgreSQL, MySQL or SQL Server), a `Then` can check
+With `db` in `saffron.config.json` (PostgreSQL, MySQL, SQL Server, Oracle, SQLite, MariaDB, CockroachDB, MongoDB, DynamoDB or Firestore), a `Then` can check
 what the database holds and a `Given` or `When` can seed data, in browser and `@api`
 scenarios alike. Name the database in a check ("in the database") and name
 the record by a value the scenario wrote: the step's text, an Examples
@@ -317,8 +323,13 @@ column, a `{unique:...}` value, or a value an earlier step kept. A check
 bound to nothing ("a customer exists") is refused while recording. A
 "not in the database" check waits out `db.timeout` (3 s by default) before
 it passes. Seeding needs `"writes": true` and the database's host or name
-in `allow`; seed what the app gives no way to set, with `{unique:...}`
-values, and the rows are undone when the scenario ends. Read
+in `allow` (a SQLite file's name, a DynamoDB region, a Firestore project);
+seed what the app gives no way to set, with `{unique:...}` values, and the
+rows are undone when the scenario ends. A step never holds a query: the
+recording agent writes it, as SQL or, on MongoDB, DynamoDB and Firestore,
+as one JSON command. On DynamoDB name the item by the value of its key
+(or of an index's key), since there is no scan; on Firestore name the
+document by its id or by a field's value. Read
 [Database steps](references/database.md) for the details.
 
 ## Repeated step groups → StepSets (`.saffron` files only)
@@ -327,7 +338,8 @@ values, and the rows are undone when the scenario ends. Read
 changes, and you gain the `StepSet:` keyword.
 
 ```gherkin
-StepSet: Complete guest information            # define: colon, like Scenario:
+# define: colon, like Scenario:
+StepSet: Complete guest information
     Given I am on the guest information page
     When I enter guest name "Chathuranga"
     And I click the continue button
@@ -335,12 +347,16 @@ StepSet: Complete guest information            # define: colon, like Scenario:
 
 Scenario: Checkout happy path
     Given I am on the cart page
-    StepSet Complete guest information         # invoke: no colon, like a step
+    # invoke: no colon, like a step
+    StepSet Complete guest information
     Then I am on the checkout page
 ```
 
-- Definition: `StepSet: <name>`. Invocation: `StepSet <name>`, the bare
-  name without the keyword is a silent parse error.
+- Definition: `StepSet: <name>`. Invocation: `StepSet <name>`. The bare
+  name without the keyword is refused after a step, and read as
+  description, so left out, above a scenario's first step.
+- A comment is a line of its own starting with `#`. After a step on the
+  same line it is part of the step's text.
 - Names are project-wide unique; sets resolve across files; no nesting.
 - Application-wide flows (login, cookie banner) live in a sets-only
   library file: `features/shared.steps.saffron` (still needs a
@@ -379,9 +395,11 @@ step. That includes dates without a year and one- or two-character
 values. A blank cell is refused the same way, or, when its step types
 `<column>`, the first filled row records once more and serves the blank
 rows too. A value the page sets in its own way (a phone or IBAN in
-blocks, an id zero-padded inside a longer one like `INV-000104`) binds the
-recording to its row the same way: give the cell the value as the page
-shows it. Keep a check that lists all rows' values out of the Outline.
+blocks, an id zero-padded inside a longer one like `INV-000104`, a date
+cell shown in another format, an amount shown with other decimals, a data
+row's value with outer spaces shown trimmed) binds the recording to its
+row the same way: give the cell the value as the page shows it, or give
+the shown value an Examples column of its own. Keep a check that lists all rows' values out of the Outline.
 Tests live in the folder named by `features` in `saffron.config.json`
 (`features/` by default).
 
@@ -421,6 +439,10 @@ Use Saffron itself first: `{date...}` tokens (ranges and locales included), capt
 | Check an API response's status in a `When` | Name the status in a `Then` ("should answer 404") |
 | One long step line carrying an API key, ids and several quoted parameters | A short step and a 2-column data table under it, one value per row |
 | A database check bound to nothing ("Then a customer exists in the database") | Name the record the scenario made: `Then the customer "ann-{unique:c}@example.test" should be saved in the database` |
+| SQL or a JSON command written in a step | Say what should be stored, in plain words; the recording agent writes the query for the project's database |
+| `scenario:` in lower case, `Scenario :`, or a tab after a step keyword | Spell headers and keywords exactly: Saffron refuses the file, where Gherkin would drop the scenario silently |
+| `When StepSet Login` | A call is a line of its own: `StepSet Login` |
+| `--filter "@smoke && !@wip"` | `--filter "@smoke and not @wip"`: the operators are the words |
 
 ## References
 

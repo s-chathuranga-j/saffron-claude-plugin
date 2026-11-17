@@ -88,7 +88,9 @@ Feature: Customers API
 - **Name the status of an error case** in the request's step or the
   `Then` right after it ("should answer
   404", "is refused with 409", "I get a 404", "the customer is not
-  found"): a number elsewhere ("I order 450 units") is no status. A response that is no
+  found"): a number elsewhere ("I order 450 units") is no status. A status
+  the step names only to rule it out ("should not answer 500") is not
+  named: a response with it fails the step. A response that is no
   2xx is recorded only when its step names that status; otherwise the
   step fails, so a failure seen while recording never replays as the
   expected result.

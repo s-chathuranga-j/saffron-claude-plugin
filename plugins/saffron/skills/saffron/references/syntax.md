@@ -7,12 +7,25 @@ everything below.
 ## Steps
 
 ```gherkin
-Given I am on the login page                     # action (healable)
+# action (healable)
+Given I am on the login page
 When I enter "standard_user" in the username field
 And I click the "Log in" button
-Then I should see the products page              # assertion (never healed)
+# assertion (never healed)
+Then I should see the products page
 But I should not see an error banner
 ```
+
+Spell the headers and step keywords exactly: `Feature:`, `Scenario:`,
+`Scenario Outline:`, `Examples:`, `Background:`, `StepSet:`, and each step
+keyword followed by one space. Gherkin reads a line it does not know as
+the description above it, so `scenario:` in lower case, `Scenario :`,
+`Scenario Name` with no colon, a tab after `Given`, or `stepset` would
+drop the scenario or the step from the run without a word, even with a
+single step or `*` steps under the header. Saffron refuses such a file
+instead, naming the line. Prose stays prose: a description line may start
+with "When" or "and", and `* item` bullets may follow a line like
+`Example usage:`.
 
 `And`/`But` inherit action-vs-assertion from the preceding step. The
 trailing block of assertions is always strict; under the opt-in
@@ -197,7 +210,8 @@ And the "Book" link should point to "/booking"
 ```gherkin
 When I place the order and wait for the order API to return 201
 And I wait until the job status API reports "READY"
-Then the order request should have returned 201        # assertion, never healed
+# assertion, never healed
+Then the order request should have returned 201
 ```
 
 Recorded as URL-pattern + method + status (+ body pattern) matchers;
@@ -231,12 +245,15 @@ recordings require format version 5, which older runners refuse.
 ## Page furniture
 
 ```gherkin
-When I click "Clear workspace" and confirm the dialog       # alert/confirm/prompt
+# alert/confirm/prompt
+When I click "Clear workspace" and confirm the dialog
 When I upload the file "examples/sample.txt" as the attachment
 When I drag the task card onto the done column
-When I enter "Great tool" in the feedback comment and send it   # inside an iframe: just interact
+# inside an iframe: just interact
+When I enter "Great tool" in the feedback comment and send it
 Then the feedback widget should show "Thanks for: Great tool"
-When I add the stay to my Apple Calendar                    # a click that downloads a file
+# a click that downloads a file
+When I add the stay to my Apple Calendar
 Then the calendar file should contain "DTSTART;VALUE=DATE:{date+7:YYYYMMDD}"
 ```
 
@@ -249,8 +266,10 @@ as today's value.
 ## Tabs (plain prose, no keyword)
 
 ```gherkin
-When I click the "Open preview" link                 # opens a new tab: replay follows it
-Then the preview should show "Draft 3"               # asserted on the new tab
+# opens a new tab: replay follows it
+When I click the "Open preview" link
+# asserted on the new tab
+Then the preview should show "Draft 3"
 When I switch back to the first tab
 And I close the preview tab
 When I open a new tab at the admin page
@@ -268,9 +287,11 @@ click) is not followed.
 
 ```gherkin
 Given As "seller" I am on the orders page
-When As "buyer" I order the blue lamp        # the buyer's own browser
+# the buyer's own browser
+When As "buyer" I order the blue lamp
 Then As "seller" I see an order for the blue lamp
-And the order is marked new                  # still the seller
+# still the seller
+And the order is marked new
 ```
 
 A step starting `As "name"` runs in that person's browser session: a
@@ -307,7 +328,7 @@ Scenario: Checkout happy path
 | Form | Syntax | Notes |
 |---|---|---|
 | Define | `StepSet: <name>` | Colon, like `Scenario:`; steps indented below |
-| Invoke | `StepSet <name>` | No colon; sits anywhere among steps |
+| Invoke | `StepSet <name>` | No colon; a line of its own anywhere among steps (`When StepSet Login` is refused) |
 
 - Expanded at parse time: inlined steps cache and seed like ordinary
   steps; editing a set makes every caller honestly stale (re-recorded
@@ -332,7 +353,9 @@ Scenario: ...
 (`--filter "@e2e and not @wip"`, `--filter "(@smoke or @sanity) and not
 @flaky"`). A comma, `|`, a space or a repeated `--filter` between plain
 tags means `or`; once `and`, `not` or a parenthesis appears, join every
-tag with `and` or `or`. The `@` may be left out.
+tag with `and` or `or`. The `@` may be left out. A comma always
+separates (a tag holding one cannot be named), and `&&`, `!` and `~` are
+refused: the operators are the words.
 
 Tags that change how a scenario runs:
 
