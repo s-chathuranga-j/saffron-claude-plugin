@@ -17,7 +17,11 @@ scenario can also call the API in a step; see the end of this page.
    npx saffron api pin https://api.example.test/docs   # a Swagger UI page, a document URL, or a file
    ```
 
-   It writes `api/openapi.json`. Add it to `saffron.config.json`, with the
+   OpenAPI 3.0, 3.1 and 3.2 are read (3.1 and 3.2 with JSON Schema
+   2020-12; a 3.2 response given only an `itemSchema`, a stream, is not
+   checked yet: "should match the contract" fails on it, so check such a
+   body with other steps), in JSON or YAML; a Swagger 2.0 document is refused (exit 2),
+   saying to pin its OpenAPI 3 form. It writes `api/openapi.json`. Add it to `saffron.config.json`, with the
    API's address when it differs from the app's:
 
    ```json
@@ -135,6 +139,35 @@ Feature: Customers API
   some. A filtered check holds when no response has that status, so pair
   "every 200 response ..." with "at least one response should have
   status 200". "The response" after a group names none of them, and fails.
+
+## Fixtures: steps a feature runs once
+
+When every scenario of an `@api` feature needs the same thing first (a
+signed-in client, a seeded customer), declare it once at the top of the
+`.saffron` file:
+
+```gherkin
+@api
+Feature: Customers API
+
+  Fixture: A seeded customer
+    Given a customer named "seed-{unique:name}" exists through the API
+
+  Scenario: The seeded customer can be read
+    When I read the seeded customer through the API
+    Then the response status should be 200
+```
+
+It runs once per run, before the feature's first scenario; what its
+requests keep reaches every scenario as `{captured:name}`, read-only. It
+is recorded, proved and accepted like a scenario, and its verdict is each
+scenario's floor: a red fixture makes them all red, a pending one makes a
+green one yellow. One per file, named, no Examples, `.saffron` and `@api`
+only (a browser fixture is not supported, and a `.feature` file is told
+to rename); it may invoke StepSets, and a fixture shared between features
+is a StepSet each one invokes. It cannot seed the database (seed in each
+scenario's `Given`), and `saffron eject` writes the feature's scenarios as
+`test.fixme`.
 
 ## What gets recorded, and what to check in `saffron diff`
 

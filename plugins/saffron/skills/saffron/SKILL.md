@@ -3,14 +3,14 @@ name: saffron
 description: Create, translate, or edit Saffron test scenarios in .saffron or .feature files, browser UI tests and HTTP API tests (@api) alike, including validating their recordings and replay. Use when asked to author or fix these test files in a Saffron project. Do not activate for ordinary application development, generic Cucumber projects, or requests only to run existing tests, inspect reports, review proposals, or configure Saffron.
 license: Saffron Free Use License v1.0 (see the saffron-ai package LICENSE)
 metadata:
-  saffron-ai: "1.4.1"
+  saffron-ai: "1.4.2"
   author: saffron-ai
   homepage: https://saffron-ai.io
 ---
 
 # Saffron
 
-This skill describes saffron-ai 1.4.1 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
+This skill describes saffron-ai 1.4.2 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
 
 Apply this workflow only when asked to create, translate, or edit Saffron
 scenarios in `.saffron` or `.feature` files. A Saffron mention or an
@@ -69,6 +69,10 @@ record (and which new steps to record and accept first) before it costs
 anything, `api_contract` lists the operations of the pinned API
 contract for `@api` scenarios, and `verify` replays what you changed at
 zero AI and reports any check you weakened against the reviewed baseline.
+`verify` drives the app under test and runs the project's `setup` and
+`teardown` commands, as `saffron run --no-agent` does: it is not
+read-only. When `run_plan` has `refused`, `saffron run` would stop the
+whole suite (exit 2) before anything runs: fix what it names first.
 
 **Know the project before touching it:**
 
@@ -159,6 +163,16 @@ count never change.
    proposal proves replay passed; it does not prove the recording faithfully
    tests the written requirement. Investigate `UNVERIFIED` proposals; do
    not accept them to finish the task or weaken the expected behavior.
+   Read every note beside a step. `accept --all` skips a proposal held by
+   one (`insensitive check:`, `volatile locator:`, `row not proved:`,
+   `check weakened:`, `date not following the clock:`, `data not
+   followed:`, `write not finished:`, `check changed the page:`,
+   `unstable recording:`, a heal's `behavior change:` or `requirement not
+   kept:`, a database repair or added write): fix the step and record
+   again; accept such a file by name only when the note's case is meant.
+   When a proposal's own check failed but its shared StepSet proved green,
+   `saffron accept <file> --step-set "<name>"` files just that set for
+   other scenarios to reuse, and leaves the proposal pending.
 7. **Prove completion.** Accept only the reviewed, verified proposals for
    this task, then run the affected scenarios with `--no-agent`. Complete
    means those scenarios pass with zero AI calls and zero tokens, with
@@ -178,7 +192,10 @@ count never change.
 - **Name captured values explicitly.** Write `I record the displayed price
   for the selected date as "beforePrice"`, then `the displayed price for
   the selected date should differ from "beforePrice"`. Reuse the exact
-  name; avoid `the price I noted` or `the previous value`. Record a baseline
+  name; avoid `the price I noted` or `the previous value`. A capture name
+  is letters, digits, `-` and `_` only (`booking-number`, never `"booking
+  number"`): replay reads it as `{captured:booking-number}`, and the
+  recording tools refuse any other. Record a baseline
   before the action, and never recreate it inside the final assertion.
 - **Keep the target and value comparable.** Compare the same date, item,
   or row across the change. If testing an amount change, capture amount-only
@@ -222,7 +239,11 @@ count never change.
 - **Name the section a step acts in** when the page repeats labels (a
   guest form and a booker form): `I replace "E-mail" in "Guest information"
   with "..."`. The recording is then scoped to that section, so it acts on
-  the right form even when both are shown.
+  the right form even when both are shown. A check whose target has both a
+  name and a selector reads only the element both find, so a scoped check
+  records the scoped selector alone; one whose name and selector point at
+  different elements fails and is never healed: record it again with
+  `saffron run --rerecord`.
 - **Wait for an observed result.** State the relevant visible state or API
   response instead of `finished loading` without a signal or a fixed sleep.
   A currency option called `GBP` may display `£` on prices. Use the observed
@@ -302,8 +323,11 @@ that must be new each run take `{unique:name}`. Refer to an earlier
 result by intent ("the customer"), never by an id you saw: the agent keeps
 the fields later steps need. `Then` steps state a status, a field's value
 or "should match the contract", and name the status of an error case.
-Pin the contract first (`npx saffron api pin <url or file>`), and read
-[API tests](references/api.md) for the recording, review and run details.
+Pin the contract first (`npx saffron api pin <url or file>`; OpenAPI 3.0,
+3.1 or 3.2), and read [API tests](references/api.md) for the recording,
+review and run details, and for a `Fixture:` block: steps an `@api`
+`.saffron` feature runs once before its scenarios, which read what it
+kept as `{captured:name}`.
 
 ## Database steps (beta)
 
@@ -391,7 +415,9 @@ glued inside other text belongs to the row (an email built from `<user>`,
 `<column>` in every step whose text or typed value depends on the row;
 otherwise the recording is bound to its row and the other rows are
 refused (red, at zero tokens) with guidance naming the column and the
-step. That includes dates without a year and one- or two-character
+step. That includes dates without a year, a cell holding a day with a
+time or a weekday (`2026-11-20 19:00`, `Fri 2026-11-20`: rows on the same
+day at different hours are refused too), and one- or two-character
 values. A blank cell is refused the same way, or, when its step types
 `<column>`, the first filled row records once more and serves the blank
 rows too. A value the page sets in its own way (a phone or IBAN in
@@ -400,6 +426,11 @@ cell shown in another format, an amount shown with other decimals, a data
 row's value with outer spaces shown trimmed) binds the recording to its
 row the same way: give the cell the value as the page shows it, or give
 the shown value an Examples column of its own. Keep a check that lists all rows' values out of the Outline.
+Give every Examples table of an Outline the same columns (or split it into
+an Outline per table): a row whose table lacks a column the recording
+reads is refused. Rows are named `<Outline> (example N)`, so never name
+another scenario that way (or `<Outline> example N`): the run refuses the
+pair with exit 2 before anything runs.
 Tests live in the folder named by `features` in `saffron.config.json`
 (`features/` by default).
 
@@ -447,13 +478,17 @@ Use Saffron itself first: `{date...}` tokens (ranges and locales included), capt
 ## References
 
 - [Syntax cheat sheet](references/syntax.md): tables, doc strings,
-  outlines, secrets, dates, network waits, page furniture, StepSets.
+  outlines, secrets, dates, captures, network waits, page furniture,
+  StepSets, tags that change a run (`@api`, `@serial`, `@side-effects`,
+  `@requires:<name>`).
 - [Configuration & CI](references/config.md): `saffron.config.json`,
-  flags, `--strict`, cross-browser and browser matrix, devices, workers
+  every command with its exit codes (`eject`, `coverage`, `diff` among
+  them), `--strict`, cross-browser and browser matrix, devices, workers
   and agent workers (`@serial` keeps scenarios that share data apart),
   heal model, secrets setup, the API settings.
 - [API tests](references/api.md): `@api` scenarios, the pinned contract,
-  writing and reviewing request steps, API calls from a browser scenario.
+  writing and reviewing request steps, fixtures, API calls from a browser
+  scenario.
 - [Database steps](references/database.md): checks and seeds against the
   configured database, what is recorded and refused, cleanup, and the one
   Then whose query may be repaired.

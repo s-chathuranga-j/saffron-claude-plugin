@@ -5,7 +5,9 @@ One plugin gives Claude Code everything it needs to write and maintain
 
 - **Language server** for `.saffron` and `.feature` files: Claude sees
   diagnostics after each edit (unknown or duplicate StepSet names, a set
-  name missing the keyword, near-duplicate wordings), and gets completion
+  name missing the keyword, two scenarios that would share a recording, a
+  scenario named like another's Examples row, near-duplicate wordings),
+  and gets completion
   with recorded / divergent / unrecorded badges, StepSet and `{env:VAR}`
   go-to-definition, and hover.
 - **MCP server** with `search_steps`, `list_step_sets`, `project_status`,
@@ -17,8 +19,8 @@ One plugin gives Claude Code everything it needs to write and maintain
 - **The Saffron agent skill**: reuse the vocabulary, keep `Then` steps
   sacred, secrets as `{env:VAR}` and shared values as `{data:...}`,
   StepSets, several people in one scenario (`As "buyer"`), API tests
-  (`@api`) against a pinned OpenAPI contract, the run → review → accept
-  workflow, and reviewing a heal made in CI.
+  (`@api`) against a pinned OpenAPI contract, database checks and seeds,
+  the run → review → accept workflow, and reviewing a heal made in CI.
 
 ## Install
 
@@ -29,8 +31,10 @@ One plugin gives Claude Code everything it needs to write and maintain
 
 The language server and MCP server run `saffron-ai` through `npx`,
 pinned to the version this plugin was built from; the first start
-downloads it. Recording and healing need Claude credentials in the
-project as usual (`npx saffron run`); the plugin itself needs nothing.
+downloads it. Recording and healing need the project's AI provider
+signed in as usual (`npx saffron run`); the plugin itself needs nothing.
+In a project that uses the plugin, run `npx saffron init --no-mcp --agents agents`
+so neither the MCP server nor the Saffron skill is installed twice.
 
 ### Codex
 
@@ -49,7 +53,9 @@ pinned Saffron package from npm. The MCP server reads the current
 project's scenario files, vocabulary, configuration, cache and report
 metadata. These can contain personal data supplied by the project.
 The MCP tools do not record tests or send project data to a hosted
-Saffron service.
+Saffron service. One tool, `verify`, replays scenarios against the app
+under test with no AI, as `saffron run --no-agent` does, and so runs the
+project's `setup` and `teardown` commands.
 
 The authoring skill can run Saffron to record or heal tests. Those runs
 require Playwright browsers and a configured AI provider, and can send

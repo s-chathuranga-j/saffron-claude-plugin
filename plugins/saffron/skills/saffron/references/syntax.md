@@ -66,7 +66,21 @@ A `<name>` within an edit or two of a column (a misspelt `<rol>` beside
 `"<script>"` or `List<String>`, stay literal. An Outline with no Examples
 whose steps use a placeholder is refused (add Examples or use
 `Scenario:`), and so is an Examples block with no table
-(`Examples: data:roles`; the file form is `Examples: {data:roles}`).
+(`Examples: data:roles`; the file form is `Examples: {data:roles}`) or a
+header row with no rows under it.
+An Outline's rows go by `<name> (example N)`: a scenario of that name, or
+one whose name spells it with other punctuation (`Dup example 1`), stops
+every run of the project with exit 2, naming both, so name it otherwise.
+One recording serves all of an Outline's rows, so give its Examples
+tables the same columns (or write an Outline per table): a row whose
+table lacks a column the recording reads is refused.
+
+A row value a step does not name as `<column>` binds the recording to
+its row, and the other rows are refused naming the column. A day counts
+as a row value in any form a cell gives it: `2026-11-20`, with
+a time (`2026-11-20 19:00`, `2026-11-20T19:00`) or a weekday (`Fri
+2026-11-20`), so rows on the same day at different hours are refused
+too: write `<column>` in every step that reads it.
 
 ## Data tables
 
@@ -193,7 +207,10 @@ is 9 digits.
 - Text assertions read only what the page shows: hidden text, hidden
   options, hidden parts of an element and anything inside a frame the
   page hides never satisfy them.
-- Capture and compare displayed values instead of literals:
+- Capture and compare displayed values instead of literals. A capture's
+  name is letters, digits, `-` and `_` only (`before`, `booking-number`):
+  a later step reads it as `{captured:name}`, and the recording tools
+  refuse a name with a space or a dot.
 
 ```gherkin
 When I record the displayed total as "before"
@@ -365,6 +382,8 @@ Tags that change how a scenario runs:
 | `@side-effects` | It changes the app's data; `run_plan` counts how often it runs |
 | `@serial` | Never runs at the same time as another `@serial` scenario |
 | `@serial:<name>` | Never runs at the same time as another scenario with that name (`@serial:rooms`); any case, and commas give several (`@serial:rooms,users`) |
+| `@requires:<name>` | Not run where `capabilities` in `saffron.config.json` sets that name to `false` (`"issuer-redirect": false`): red, blocked by the environment, naming it, and never recorded or healed around it |
+| `@REQ-12` (matching `requirementTag`) | The requirement the scenario covers: `saffron coverage` maps it, and `verify` reports one left uncovered |
 
 `@serial` holds across workers, the record and heal phases, a heal's proof
 replays of an Outline's other rows, and `--shard` (one name's scenarios go to

@@ -120,10 +120,16 @@ Scenario: A new customer is saved
   that must not be in a JSON column (`/0/data/discount`) holds only when
   that row is there.
 - A "differs" check reads text that spells a number as the number (a
-  decimal, a bigint and a count come back as text): `12.50` does not
-  differ from `12.5`. Where the text itself matters (a version `1.10`),
-  give the check `"type": "string"`; a code with a leading zero (`01234`)
-  is compared as text already. An "at most" check with an empty or null
+  decimal, a bigint and a count come back as text), and a number the
+  driver returns as one (SQLite's `REAL`, a document's number) the same
+  way: `12.50` does not differ from `12.5`, `+12.5`, `012.50`, nor `0.5`
+  from `.5`. Where the text itself matters (a version `1.10`), give the
+  check `"type": "string"`, as its failure says; a code with a leading
+  zero and no point (`01234`) is compared as text already. A `char(n)`
+  value is compared without its padding blanks, and a dollar amount
+  (PostgreSQL's `money`, `$1,234.50`, on any engine) by its amount. A
+  boolean column takes `true` or `false`: a number against it (`1` for a
+  MySQL `BOOLEAN`) is refused. An "at most" check with an empty or null
   bind is refused, as a "not in the database" check is: to count rows
   whose column is rightly empty, compare its length with the number 0
   (`length(note) = $1`); on Oracle an empty text is NULL, so write

@@ -1,6 +1,6 @@
 {
   "name": "saffron",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Write end-to-end tests in plain language with Saffron, browser UI and HTTP API alike: an AI agent records each scenario once, every later run replays at zero tokens. Adds the saffron MCP server (search_steps, list_step_sets, project_status, run_plan, api_contract, verify) and the Saffron agent skill.",
   "author": {
     "name": "Chathuranga Jayasinghe",
@@ -24,7 +24,7 @@
   "interface": {
     "displayName": "Saffron",
     "shortDescription": "UI tests in plain language",
-    "longDescription": "Write .saffron and .feature tests in plain language. An AI agent records each scenario once and cached runs replay at zero tokens. The local MCP tools search your project's vocabulary, list StepSets and read project status so Codex can reuse recorded wordings. Requires Node.js 22.12 or later. Recording and healing require Playwright browsers and a configured AI provider; AI usage is charged to your own account. Runs locally and reads files in the current project. Codex receives the MCP server and authoring skill; the language server is available in Claude Code only.",
+    "longDescription": "Write .saffron and .feature tests in plain language. An AI agent records each scenario once and cached runs replay at zero tokens. The local MCP tools search your project's vocabulary, list StepSets and read project status so Codex can reuse recorded wordings. Requires Node.js 22.12 or later. Recording and healing require Playwright browsers and a configured AI provider; AI usage is charged to your own account. Runs locally and reads files in the current project; its verify tool replays scenarios against your app with no AI, running the project's setup and teardown commands. Codex receives the MCP server and authoring skill; the language server is available in Claude Code only.",
     "developerName": "Chathuranga Jayasinghe",
     "category": "Developer Tools",
     "capabilities": [
