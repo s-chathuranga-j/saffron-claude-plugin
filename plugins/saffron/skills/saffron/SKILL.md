@@ -3,14 +3,14 @@ name: saffron
 description: Create, translate, or edit Saffron test scenarios in .saffron or .feature files, browser UI tests and HTTP API tests (@api) alike, including validating their recordings and replay. Use when asked to author or fix these test files in a Saffron project. Do not activate for ordinary application development, generic Cucumber projects, or requests only to run existing tests, inspect reports, review proposals, or configure Saffron.
 license: Saffron Free Use License v1.0 (see the saffron-ai package LICENSE)
 metadata:
-  saffron-ai: "1.4.2"
+  saffron-ai: "1.4.3"
   author: saffron-ai
   homepage: https://saffron-ai.io
 ---
 
 # Saffron
 
-This skill describes saffron-ai 1.4.2 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
+This skill describes saffron-ai 1.4.3 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
 
 Apply this workflow only when asked to create, translate, or edit Saffron
 scenarios in `.saffron` or `.feature` files. A Saffron mention or an
@@ -132,8 +132,8 @@ count never change.
    scenario, read the pinned contract (`api_contract`) instead of the
    page, and where access allows, send the request once to see a real
    response; pin a contract first if the project has none.
-3. **Design one behavior per scenario.** When translating Cypress or other
-   tests, preserve the intended coverage, reconsider assumptions, and
+3. **Design one behavior per scenario.** When translating tests from another
+   tool, preserve the intended coverage, reconsider assumptions, and
    split independent changes. Compare the same target immediately before
    and after the change under test. Do not assume every intermediate value
    must differ from every earlier value. Keep required setup and waits;
@@ -208,7 +208,9 @@ count never change.
   decimal style, and compares to the cent, or to the decimals the element
   shows when it shows more: a rate shown as `0.1200` is not `0.1204`.
   Minus and "times 2" work too; percentages, rounding rules and taxes do
-  not.
+  not. A conversion (`"sek-total" times 0.0963`, shown in dollars) works
+  when the capture holds the number alone; the recording agent captures it
+  with a pattern.
 - **Check the route, not only the destination.** When the requirement is
   a path (a 3DS challenge, a redirect, a confirmation dialog), add a
   mid-scenario `Then` for each checkpoint, such as `Then I should see the
@@ -223,9 +225,9 @@ count never change.
   headers, query parameters and body fields as much as for a form:
 
   ```gherkin
-  When I validate the no-show reservation with these request details
-    | reservation    | {data:no-show.chargeable} |
-    | API key        | {env:NOSHOW_API_KEY}      |
+  When I request a refund of the order with these request details
+    | order          | {data:orders.paid}        |
+    | API key        | {env:PAYMENTS_API_KEY}    |
     | correlation ID | {unique:correlation}      |
   ```
 
@@ -422,7 +424,8 @@ values. A blank cell is refused the same way, or, when its step types
 `<column>`, the first filled row records once more and serves the blank
 rows too. A value the page sets in its own way (a phone or IBAN in
 blocks, an id zero-padded inside a longer one like `INV-000104`, a date
-cell shown in another format, an amount shown with other decimals, a data
+cell shown in another format, an amount shown with other decimals, a database amount whose cell is
+written with a decimal comma or a currency (`12,50`), a data
 row's value with outer spaces shown trimmed) binds the recording to its
 row the same way: give the cell the value as the page shows it, or give
 the shown value an Examples column of its own. Keep a check that lists all rows' values out of the Outline.

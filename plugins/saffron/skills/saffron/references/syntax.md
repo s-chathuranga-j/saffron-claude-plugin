@@ -170,8 +170,8 @@ Scenario Outline: Role sees its menu
   Examples: {data:roles}
 ```
 
-Reads `data/roles.csv` (header row = placeholder names) or a JSON list of
-records. One recording, one zero-token replay per row; adding a row records
+Reads `data/roles.csv` (header row = placeholder names; every row gives every column, with a trailing comma for an empty last value) or a JSON list of
+records (a nested list or object is its JSON; a record missing a field another record has is refused: write `"field": ""` to leave it empty). One recording, one zero-token replay per row; adding a row records
 nothing, unless the recording is bound to its row (the row is refused
 with guidance) or the row's value needs one more recording. A placeholder with no column is a parse error naming both.
 
@@ -249,8 +249,11 @@ And that response's JSON field "error" should be absent
 
 Record JSON fields with `saffron_assert kind=response json=[...]`, or with
 `saffron_wait_api json=[...]` for a wait. Each check has a JSON Pointer
-`path` (`/order/status`, `/items/0/sku`) and either `equals` as text or
-`exists` as true/false. Equality defaults to string; set `type` to number,
+`path` (`/order/status`, `/items/0/sku`) and one of: `equals` as text,
+`exists` as true/false, `differs` (not this value; at an object or list,
+written as JSON), `pattern`, `min` and/or `max`, `count` (a list of exactly
+that many), `item` (an entry wherever it stands) or `every` (each entry; an
+empty list fails). Equality defaults to string; set `type` to number,
 boolean or null when the step expects that type. For null, use
 `equals="null", type="null"`. A null field is present, not absent.
 Preserve the step's Examples, data, env, unique and date tokens in expected

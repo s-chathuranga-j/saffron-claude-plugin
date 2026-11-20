@@ -75,7 +75,7 @@ Scenario: A new customer is saved
 
 | Action | Step | Holds |
 |---|---|---|
-| `dbWrite` | `Given`, `When` | One `INSERT`, or one `UPDATE` with a `WHERE`; values as `$1`, `$2` binds (`body`); `extract` keeps a field of the first row written as `{captured:name}` |
+| `dbWrite` | `Given`, `When` | One `INSERT`, or one `UPDATE` with a `WHERE`; values as `$1`, `$2` binds (`body`); `extract` keeps a field of the first row written as `{captured:name}`; a field kept under a credential's name (`api_token`) is treated as a credential, masked and never sent to a host not under test |
 | `expectRows` | `Then` | One `SELECT`; values as binds; `json` checks on its rows read as a JSON list (`count`, `/0/column` equals, `item`); `rowCount`, the rows it found when recorded |
 
 - Values are binds, never written into the SQL: a literal is refused, and
@@ -86,7 +86,7 @@ Scenario: A new customer is saved
   every value of an `IN`, needs such a bind (`email = $1 OR role =
   'admin'` is refused); one side of an `AND` is enough. `<>`, `NOT (...)`, a
   range alone, a bind in `LIMIT`, and `UNION` are refused, and a subquery
-  must tie its own rows. A `LIKE` value made only of `%` or `_` (an
+  must tie its own rows. A `WHERE` that contradicts itself matches no row whatever the data, so it is refused: `name = $1 AND name <> $1`, a column compared with itself, `= $1` beside `IS NULL` on that column, an `IN` list whose every bind is also excluded, SQLite's `IS NOT $1` or PostgreSQL's `IS DISTINCT FROM $1` beside the same pin. So is a MongoDB filter that excludes the value it asks for (`$eq` or `$in` beside `$ne` or `$nin`, an `$all` value also excluded, a value beside `{"$exists": false}`, also across an `$and`), the same on DynamoDB with `$ne` (it has no `$nin` or `$all`), and a Firestore `where` with `==` and `!=` (or `in` and `not-in`) of one bind on one field. A `LIKE` value made only of `%` or `_` (an
   Examples cell too) matches every row, so it is refused unless another
   condition ties the rows. In a "not in the database" check a `LIKE` value
   holding a backslash (a `[` on SQL Server) is refused: compare that text
@@ -101,7 +101,11 @@ Scenario: A new customer is saved
   On MySQL join texts with `CONCAT()`: `||` runs as `OR` there and is
   refused.
   Binds are written as their tokens, so each Examples row checks its own
-  value. Bind a row's whole value (`<email>`), never a part of it ("ann"
+  value. An amount the database keeps as a number follows its cell only
+  when the cell is a plain number (`12.50`, `1250`): a cell in another
+  notation (`12,50`, `12,- €`, `12,50 Euro`, `(12,50)`) cannot be sent as
+  written, so it binds the recording to the row it was made on, and the
+  other rows are refused as row-bound. Bind a row's whole value (`<email>`), never a part of it ("ann"
   of ann@example.test): a part is kept as written for every row and is
   refused, unless every row holds it alike. An aggregate with no `GROUP BY` is always one row: check its
   value (`/0/n equals 1`, or a count on a list it holds), never a count
@@ -127,9 +131,14 @@ Scenario: A new customer is saved
   check `"type": "string"`, as its failure says; a code with a leading
   zero and no point (`01234`) is compared as text already. A `char(n)`
   value is compared without its padding blanks, and a dollar amount
-  (PostgreSQL's `money`, `$1,234.50`, on any engine) by its amount. A
-  boolean column takes `true` or `false`: a number against it (`1` for a
-  MySQL `BOOLEAN`) is refused. An "at most" check with an empty or null
+  (PostgreSQL's `money`, `$1,234.50`, on any engine) by its amount, as is
+  an amount written with a currency, grouping or decimal comma (`€12.50`,
+  `12,50`, `1,000`), also with a plus sign, a currency word or a currency code in either case (`+€12.50`, `12,50 Euro`, `12.50 eur`, `Rs. 12.50`); a percentage (`12.5%`) is read as both 12.5 and 0.125. A boolean column takes `true` or `false`: a number
+  against it (`1` for a MySQL `BOOLEAN`) is refused, and so is `true` or
+  `false` against a number (SQLite and Oracle keep a boolean as 1 or 0:
+  write 1 or 0). A whole row or row list is read field by field the same
+  way; to compare one field's text as written, check it on its own with
+  `"type": "string"`. An "at most" check with an empty or null
   bind is refused, as a "not in the database" check is: to count rows
   whose column is rightly empty, compare its length with the number 0
   (`length(note) = $1`); on Oracle an empty text is NULL, so write

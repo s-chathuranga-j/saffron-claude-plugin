@@ -69,9 +69,9 @@ Feature: Customers API
   the body, a form field), so editing a cell replays at zero AI:
 
   ```gherkin
-  When I validate the no-show reservation with these request details
-    | reservation    | {data:no-show.chargeable} |
-    | API key        | {env:NOSHOW_API_KEY}      |
+  When I request a refund of the order with these request details
+    | order          | {data:orders.paid}        |
+    | API key        | {env:PAYMENTS_API_KEY}    |
     | correlation ID | {unique:correlation}      |
   Then the response status should be 200
   ```
@@ -109,7 +109,7 @@ Feature: Customers API
 - **Outlines** work as for browser scenarios: write `<column>` in every
   step whose request or check depends on the row.
 - **Several requests at once, each with its own values** (an idempotency
-  test, two registrations racing) are one step with a table: a header
+  test, two refunds racing) are one step with a table: a header
   row, then a row per request, the first column naming it. Saffron sends
   the request once per row, every row before any answers, and keeps each
   response with its row whatever order they arrive in. Values all rows
@@ -117,17 +117,17 @@ Feature: Customers API
 
   ```gherkin
   Background:
-    Given no-show registrations use these shared request details:
-      | reservation     | {data:no-show.chargeable} |
-      | API key         | {env:NOSHOW_API_KEY}      |
-      | idempotency key | {unique:registration}     |
+    Given refund requests use these shared request details:
+      | order           | {data:orders.paid}        |
+      | API key         | {env:PAYMENTS_API_KEY}    |
+      | idempotency key | {unique:refund}           |
 
   Scenario: Correlate every response to its concurrent request
-    When I send these no-show registrations concurrently as "registrations":
+    When I send these refund requests concurrently as "refunds":
       | request   | correlation ID     |
       | original  | {unique:original}  |
       | duplicate | {unique:duplicate} |
-    Then every response in "registrations" should have status 200 or 202
+    Then every response in "refunds" should have status 200 or 202
     And every response should echo its own request's correlation ID
     And every 202 response should have a numeric "Retry-After" header
     And at least one response should have status 200
