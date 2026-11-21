@@ -318,7 +318,9 @@ A step starting `As "name"` runs in that person's browser session: a
 browser context with its own cookies, storage, login and tabs. The
 session carries over to the following steps until another `As "..."`;
 steps before the first one run in the default session, and `As "default"`
-goes back to it. Names are case-sensitive. Each session keeps
+goes back to it. Names are case-sensitive, and one name written in two
+cases in a scenario (`As "Admin"`, then `As "admin"`) is refused: write
+each name the same way everywhere, `sessions` entries included. Each session keeps
 its page while another one acts. Give a session its own login with
 `"sessions": { "buyer": { "storageState": ".auth/buyer.json" } }` in
 `saffron.config.json`; a session without an entry starts from the

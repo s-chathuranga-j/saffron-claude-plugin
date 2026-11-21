@@ -38,7 +38,28 @@ step, named by the URL's scheme (`postgres://`, `mysql://`, `mssql://`,
   anywhere else is refused before it runs.
 - `timeout` (milliseconds, default 3000) is how long a check reads again.
 - `cleanup` (default `"all"`) is what is undone when a scenario ends.
+- `redactColumns` lists columns (or document fields) whose values the
+  recording agent never sees, matched by name in any case: its rows,
+  messages and kept values show `[redacted: redactColumns]` instead, and
+  every value of a statement that names such a column is hidden. Replay
+  still compares the real values.
 - Give Saffron its own database user on a test database.
+
+Several databases go under `databases`, by name, each with the settings
+above; settings of one database beside `databases` are refused:
+
+```json
+{
+  "db": { "databases": {
+    "default": { "url": "{env:DATABASE_URL}", "writes": true, "allow": ["localhost"] },
+    "orders": { "url": "{env:ORDERS_DB_URL}", "redactColumns": ["card_number"] }
+  } }
+}
+```
+
+A step names the database it reads ("in the orders database", "the orders
+db"); a step that names none uses the one named `default`, or the only one.
+The recording names the database of each step (`database`).
 
 ## Wording the steps
 
@@ -68,8 +89,12 @@ Scenario: A new customer is saved
 - A seed `Given` states the data, not how to insert it. Seed only what the
   app gives no way to set; a `When` that the app performs goes through the
   app.
-- A `Fixture:` block does not write to the database: seed in each
-  scenario's `Given`.
+- A `Fixture:` block may seed the database: its rows stay until the run's
+  scenarios are done, then are undone as `cleanup` says.
+- A check that rows are not there must hold for the whole `timeout`. A step
+  that says the rows eventually go ("should eventually be gone", "is
+  eventually deleted", "should no longer exist", "is no longer in the
+  database") waits up to `timeout` for them to go, then passes.
 
 ## What is recorded
 
@@ -153,8 +178,9 @@ Scenario: A new customer is saved
   must not exist) waits for a row a worker deletes late, then must hold to
   the end of the window, so a row a worker writes late fails it. A check holding both waits for the first part, then holds
   the second to the end.
-- The run report shows each check's SQL, row count and first five rows,
-  masked.
+- The run report and `saffron trace` show each check's SQL, row count and
+  first five rows, masked, and the database it read when `db.databases`
+  names several.
 
 ## Refused
 
@@ -188,7 +214,8 @@ A write that must be undone needs a table with a primary key; an `UPDATE`
 that changes a primary key is refused under `"all"`. What a recording
 wrote is undone before its proof replays it, and what the proof wrote
 before the stability and row proofs. A row cleanup cannot undo is named
-on the console. A killed run (SIGKILL, out of memory) undoes nothing, and
+on the console and in the run report, beside its scenario (a Fixture's at
+run level), and the verdict stands. A killed run (SIGKILL, out of memory) undoes nothing, and
 rows a database trigger writes are never undone: sweep them in
 `teardown`. `run --plan` lists a write that `cleanup` keeps as a side
 effect.
@@ -338,5 +365,7 @@ One JSON command per step, every value a placeholder:
 
 ## Not yet
 
-`saffron eject` writes these scenarios as `test.fixme`; the
-editor plugins show database steps only as the runner reports them.
+`saffron eject` writes MongoDB, DynamoDB and Firestore steps as
+`test.fixme` (SQL steps export as real driver calls); the editor
+plugins mark a `db` setting the runner refuses and show each check's
+rows and cleanup leftovers in Last Run, from the next plugin release.

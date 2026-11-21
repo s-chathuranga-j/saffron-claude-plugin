@@ -165,9 +165,9 @@ scenario's floor: a red fixture makes them all red, a pending one makes a
 green one yellow. One per file, named, no Examples, `.saffron` and `@api`
 only (a browser fixture is not supported, and a `.feature` file is told
 to rename); it may invoke StepSets, and a fixture shared between features
-is a StepSet each one invokes. It cannot seed the database (seed in each
-scenario's `Given`), and `saffron eject` writes the feature's scenarios as
-`test.fixme`.
+is a StepSet each one invokes. It can seed the database with `db.writes`
+on: its rows stay until the run's scenarios are done. `saffron eject`
+writes the feature's scenarios as `test.fixme`.
 
 ## What gets recorded, and what to check in `saffron diff`
 

@@ -3,14 +3,14 @@ name: saffron
 description: Create, translate, or edit Saffron test scenarios in .saffron or .feature files, browser UI tests and HTTP API tests (@api) alike, including validating their recordings and replay. Use when asked to author or fix these test files in a Saffron project. Do not activate for ordinary application development, generic Cucumber projects, or requests only to run existing tests, inspect reports, review proposals, or configure Saffron.
 license: Saffron Free Use License v1.0 (see the saffron-ai package LICENSE)
 metadata:
-  saffron-ai: "1.4.3"
+  saffron-ai: "1.4.4"
   author: saffron-ai
   homepage: https://saffron-ai.io
 ---
 
 # Saffron
 
-This skill describes saffron-ai 1.4.3 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
+This skill describes saffron-ai 1.4.4 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
 
 Apply this workflow only when asked to create, translate, or edit Saffron
 scenarios in `.saffron` or `.feature` files. A Saffron mention or an
@@ -429,6 +429,10 @@ written with a decimal comma or a currency (`12,50`), a data
 row's value with outer spaces shown trimmed) binds the recording to its
 row the same way: give the cell the value as the page shows it, or give
 the shown value an Examples column of its own. Keep a check that lists all rows' values out of the Outline.
+A check that names a column only in its prose follows the row only after a step that types, sends or opens the value
+(`When I log in as "<user>"`), or in the session the column names (`As "<user>"`); after a step that only clicks or
+picks by it (`When I select the <plan> plan`) it is bound, so write the value in the text it expects or scope it to the
+row's section.
 Give every Examples table of an Outline the same columns (or split it into
 an Outline per table): a row whose table lacks a column the recording
 reads is refused. Rows are named `<Outline> (example N)`, so never name
