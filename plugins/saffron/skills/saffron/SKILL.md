@@ -3,14 +3,14 @@ name: saffron
 description: Create, translate, or edit Saffron test scenarios in .saffron or .feature files, browser UI tests and HTTP API tests (@api) alike, including validating their recordings and replay. Use when asked to author or fix these test files in a Saffron project. Do not activate for ordinary application development, generic Cucumber projects, or requests only to run existing tests, inspect reports, review proposals, or configure Saffron.
 license: Saffron Free Use License v1.0 (see the saffron-ai package LICENSE)
 metadata:
-  saffron-ai: "1.4.4"
+  saffron-ai: "1.5.0"
   author: saffron-ai
   homepage: https://saffron-ai.io
 ---
 
 # Saffron
 
-This skill describes saffron-ai 1.4.4 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
+This skill describes saffron-ai 1.5.0 (see the compatibility page: https://saffron-ai.io/docs/compatibility).
 
 Apply this workflow only when asked to create, translate, or edit Saffron
 scenarios in `.saffron` or `.feature` files. A Saffron mention or an
@@ -398,6 +398,7 @@ npx saffron trace "<scenario>"              # inspect a failed or adapted step (
 npx saffron accept <proposal-file>          # accept a reviewed, verified proposal
 npx saffron run features/login.saffron:12 --no-agent  # prove cached replay
 npx saffron status --json                   # confirm affected scenario state
+npx saffron ui                              # the same loop in a local page, for people (not for agents)
 npx saffron api pin <url or file>           # pin the API contract @api scenarios check against
 ```
 
