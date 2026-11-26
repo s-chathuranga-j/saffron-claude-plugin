@@ -8,7 +8,7 @@
   },
   "homepage": "https://saffron-ai.io",
   "repository": "https://github.com/s-chathuranga-j/saffron-claude-plugin",
-  "license": "Saffron Free Use License v1.0",
+  "license": "Saffron Free Use License v1.1",
   "icon": "./assets/icon.png",
   "documentationUrl": "https://saffron-ai.io/docs",
   "privacyPolicyUrl": "https://github.com/s-chathuranga-j/saffron-claude-plugin/blob/main/plugins/saffron/README.md#requirements-and-data-handling",

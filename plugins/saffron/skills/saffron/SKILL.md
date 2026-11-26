@@ -1,7 +1,7 @@
 ---
 name: saffron
 description: Create, translate, or edit Saffron test scenarios in .saffron or .feature files, browser UI tests and HTTP API tests (@api) alike, including validating their recordings and replay. Use when asked to author or fix these test files in a Saffron project. Do not activate for ordinary application development, generic Cucumber projects, or requests only to run existing tests, inspect reports, review proposals, or configure Saffron.
-license: Saffron Free Use License v1.0 (see the saffron-ai package LICENSE)
+license: Saffron Free Use License v1.1, which lets you edit and share this skill (see the saffron-ai package LICENSE)
 metadata:
   saffron-ai: "1.5.0"
   author: saffron-ai

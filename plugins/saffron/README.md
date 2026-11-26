@@ -73,8 +73,10 @@ This developer tool is not intended specifically for users under 18.
 ## License
 
 Free to install and use, including commercially, under the
-[Saffron Free Use License v1.0](LICENSE). The tests, caches, reports and
-other files Saffron produces from your work are yours. You may not
+[Saffron Free Use License v1.1](LICENSE). The tests, caches, reports and
+other files Saffron produces from your work are yours. You may edit and
+share the skill and the files `saffron init` adds to your project, and the
+helper files `saffron eject` writes as part of that project. You may not
 modify or redistribute Saffron itself. AI calls run on your own
 credentials, so any charges are on your account.
 
